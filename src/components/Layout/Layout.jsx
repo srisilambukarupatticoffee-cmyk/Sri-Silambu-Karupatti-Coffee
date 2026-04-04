@@ -48,7 +48,7 @@ export default function Layout({ children }) {
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <div className="brand">
-            <img src="/src/assets/silambu_logo.png" alt="Silambu" className="brand-logo" />
+            <img src="/silambu_logo.png" alt="Silambu" className="brand-logo" />
             {!collapsed && <span className="brand-text">Hotel Silambu</span>}
           </div>
           <button className="collapse-btn desktop-only" onClick={() => setCollapsed(!collapsed)} title={collapsed ? 'Expand' : 'Collapse'}>

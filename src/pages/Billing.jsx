@@ -145,7 +145,7 @@ export default function Billing() {
       <body>
         <div class="center">
           <div class="logo-row">
-            <img src="/src/assets/silambu_logo.png" class="logo-img" />
+            <img src="/silambu_logo.png" class="logo-img" />
             <h2>${shopName}</h2>
           </div>
           <p>${address}</p>

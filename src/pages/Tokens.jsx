@@ -51,7 +51,7 @@ export default function Tokens() {
       </head>
       <body>
         <div class="logo-row">
-          <img src="/src/assets/silambu_logo.png" class="logo-img" />
+          <img src="/silambu_logo.png" class="logo-img" />
           <div style="font-size: 14px; font-weight: bold;">${shopName}</div>
         </div>
         <div style="font-size: 12px;">TOKEN RECEIPT</div>
