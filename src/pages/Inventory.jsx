@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { db, CATEGORIES, UNITS } from '../utils/db';
 import { useAuth } from '../contexts/AuthContext';
 import { LuPlus, LuSearch, LuPencil, LuTrash2, LuPackagePlus, LuPackageMinus, LuTriangleAlert } from 'react-icons/lu';

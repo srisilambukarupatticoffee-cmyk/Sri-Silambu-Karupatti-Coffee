@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { db } from '../utils/db';
 import { LuUsers, LuSearch, LuShoppingCart } from 'react-icons/lu';
 import './Pages.css';

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { db } from '../utils/db';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -144,11 +144,6 @@ export default function Dashboard() {
   }, [period, sales, expenses, tokens, products]);
 
   const data = dashboardStats;
-
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handlePrintDaySummary = () => {
     const shopName = settings.shopName || 'Sri Silambu Karupatti Coffee';

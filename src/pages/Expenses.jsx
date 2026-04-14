@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { db, EXPENSE_CATEGORIES } from '../utils/db';
 import { v4 as uuid } from 'uuid';
 import { LuPlus, LuPencil, LuTrash2, LuCalendar, LuFilter } from 'react-icons/lu';

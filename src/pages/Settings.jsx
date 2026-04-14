@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { db } from '../utils/db';
 import { LuSave, LuPrinter, LuSettings2 } from 'react-icons/lu';
 import './Pages.css';
 
-export default function Settings() {
 export default function Settings() {
   const [settings, setSettings] = useState({
     shopName: 'Sri Silambu Karupatti Coffee',

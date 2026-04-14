@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { db, TOKEN_CATEGORIES } from '../utils/db';
 import { v4 as uuid } from 'uuid';
 import { LuTicket, LuPlus, LuHash, LuPrinter } from 'react-icons/lu';
@@ -15,7 +15,6 @@ const TOKEN_TYPES = {
   'Ice Cream': ['Vanilla Ice Cream', 'Chocolate Ice Cream', 'Strawberry Ice Cream', 'Butterscotch Ice Cream', 'Mango Ice Cream', 'Pista Ice Cream', 'Cone Ice Cream', 'Cup Ice Cream', 'Sundae Ice Cream'],
 };
 
-export default function Tokens() {
 export default function Tokens() {
   const [tokens, setTokens] = useState([]);
   const [settings, setSettings] = useState({});

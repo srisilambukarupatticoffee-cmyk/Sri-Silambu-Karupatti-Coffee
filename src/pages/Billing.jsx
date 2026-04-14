@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { db, CATEGORIES, PAYMENT_MODES } from '../utils/db';
 import { v4 as uuid } from 'uuid';
 import {
@@ -7,7 +7,6 @@ import {
 } from 'react-icons/lu';
 import './Billing.css';
 
-export default function Billing() {
 export default function Billing() {
   const [products, setProducts] = useState([]);
   const [settings, setSettings] = useState({});
@@ -208,8 +207,6 @@ export default function Billing() {
     printWindow.document.close();
     printWindow.print();
   };
-
-  const todayTotal = todaySales.reduce((s, i) => s + (i.total || 0), 0);
 
   const todayTotal = todaySales.reduce((s, i) => s + (i.total || 0), 0);
 
