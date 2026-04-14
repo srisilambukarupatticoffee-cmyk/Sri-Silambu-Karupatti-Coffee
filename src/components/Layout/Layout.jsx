@@ -34,10 +34,6 @@ export default function Layout({ children }) {
   const navigate = useNavigate();
   const links = isAdmin() ? adminLinks : billingLinks;
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
 
   return (
     <div className={`layout ${collapsed ? 'sidebar-collapsed' : ''}`}>
@@ -74,12 +70,6 @@ export default function Layout({ children }) {
           ))}
         </nav>
 
-        <div className="sidebar-footer">
-          <button className="nav-link logout-btn" onClick={handleLogout} title="Logout">
-            <span className="nav-icon"><LuLogOut /></span>
-            {!collapsed && <span className="nav-label">Logout</span>}
-          </button>
-        </div>
       </aside>
 
       {/* Main content */}
@@ -93,13 +83,6 @@ export default function Layout({ children }) {
             <button className="theme-toggle" onClick={toggleTheme} title="Toggle theme">
               {theme === 'light' ? <LuMoon /> : <LuSun />}
             </button>
-            <div className="user-badge">
-              <div className="user-avatar">{user?.name?.charAt(0) || 'U'}</div>
-              <div className="user-info">
-                <span className="user-name">{user?.name}</span>
-                <span className="user-role">{isAdmin() ? 'Admin' : 'Billing Manager'}</span>
-              </div>
-            </div>
           </div>
         </header>
         <main className="main-content">
