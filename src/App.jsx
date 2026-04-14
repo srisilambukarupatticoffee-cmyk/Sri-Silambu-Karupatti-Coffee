@@ -3,7 +3,6 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { seedData } from './utils/db';
 import Layout from './components/Layout/Layout';
-import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Billing from './pages/Billing';
 import Inventory from './pages/Inventory';
