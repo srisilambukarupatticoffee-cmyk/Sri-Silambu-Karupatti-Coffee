@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '../utils/db';
-import { LuSave, LuPrinter, LuSettings2 } from 'react-icons/lu';
+import { LuSave, LuPrinter, LuSettings2, LuDatabase } from 'react-icons/lu';
+import { SEED_PRODUCTS } from '../data/inventory_seeds';
 import './Pages.css';
 
 export default function Settings() {
@@ -62,6 +63,26 @@ export default function Settings() {
     }
   };
 
+  const handleSeedProducts = async () => {
+    if (!confirm(`This will add ${SEED_PRODUCTS.length} products to your inventory. Existing products with the same names may be duplicated. Continue?`)) return;
+    setMigrating(true);
+    try {
+      for (const product of SEED_PRODUCTS) {
+        await db.add('products', {
+          ...product,
+          id: `prod_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          createdAt: new Date().toISOString()
+        });
+      }
+      alert('Product list seeded successfully!');
+      window.location.reload();
+    } catch (err) {
+      alert('Seeding failed: ' + err.message);
+    } finally {
+      setMigrating(false);
+    }
+  };
+
   const update = (key, value) => setSettings(prev => ({ ...prev, [key]: value }));
 
   return (
@@ -81,14 +102,23 @@ export default function Settings() {
         <div className="section-card">
           <h3 className="section-title">☁️ Cloud Migration</h3>
           <div className="settings-form">
-            <p className="setting-help">Transfer your local data (products, sales, settings) to MongoDB Atlas.</p>
+            <p className="setting-help">Transfer local products/sales to MongoDB.</p>
             <button 
               className="btn btn-outline" 
               onClick={handleMigrate}
               disabled={migrating}
-              style={{ width: '100%', marginTop: '10px' }}
+              style={{ width: '100%', marginTop: '5px' }}
             >
-              {migrating ? 'Migrating...' : 'Push Data to Cloud'}
+              Push Local Data to Cloud
+            </button>
+            <p className="setting-help" style={{ marginTop: '15px' }}>Initialize database with standard product list.</p>
+            <button 
+              className="btn btn-primary" 
+              onClick={handleSeedProducts}
+              disabled={migrating}
+              style={{ width: '100%', marginTop: '5px' }}
+            >
+              <LuDatabase /> Seed Product List
             </button>
           </div>
         </div>
