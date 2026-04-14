@@ -123,7 +123,7 @@ export default function Billing() {
   const handlePrint = () => {
     const settings = db.getAll('settings') || {};
     const printWindow = window.open('', '_blank', 'width=320,height=600');
-    const shopName = typeof settings === 'object' && !Array.isArray(settings) ? settings.shopName : 'Hotel Silambu';
+    const shopName = typeof settings === 'object' && !Array.isArray(settings) ? settings.shopName : 'Sri Silambu Karupatti Coffee';
     const address = typeof settings === 'object' && !Array.isArray(settings) ? settings.address : '';
     const gst = typeof settings === 'object' && !Array.isArray(settings) ? settings.gst : '';
 
@@ -131,15 +131,18 @@ export default function Billing() {
       <html>
       <head><title>Receipt</title>
       <style>
-        body { font-family: 'Courier New', monospace; width: 280px; margin: 0 auto; padding: 10px; font-size: 12px; }
+        @page { margin: 0; }
+        body { font-family: 'Courier New', monospace; width: 260px; margin: 0 auto; padding: 10mm 5mm; font-size: 11px; }
         .center { text-align: center; }
         .logo-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 5px; }
-        .logo-img { width: 30px; height: 30px; object-fit: contain; }
+        .logo-img { width: 35px; height: 35px; object-fit: contain; }
         .bold { font-weight: bold; }
         .line { border-top: 1px dashed #000; margin: 6px 0; }
-        .row { display: flex; justify-content: space-between; gap: 10px; }
-        h2 { margin: 0; font-size: 16px; }
-        p { margin: 2px 0; }
+        .grid { display: grid; grid-template-columns: 1fr 40px 70px; gap: 5px; align-items: start; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        h2 { margin: 0; font-size: 15px; }
+        p { margin: 2px 0; white-space: pre-line; line-height: 1.2; }
       </style>
       </head>
       <body>
@@ -155,9 +158,9 @@ export default function Billing() {
         <div class="row"><span>Date: ${new Date(showReceipt.date).toLocaleDateString()}</span><span>${new Date(showReceipt.date).toLocaleTimeString()}</span></div>
         <p>Customer: ${showReceipt.customerName}</p>
         <div class="line"></div>
-        <div class="row bold"><span>Item</span><span>Qty</span><span>Amt</span></div>
+        <div class="grid bold"><span>Item</span><span class="text-center">Qty</span><span class="text-right">Amt</span></div>
         <div class="line"></div>
-        ${showReceipt.items.map(i => `<div class="row"><span>${i.name}</span><span>${i.qty}</span><span>₹${(i.sellingPrice * i.qty).toFixed(2)}</span></div>`).join('')}
+        ${showReceipt.items.map(i => `<div class="grid"><span>${i.name}</span><span class="text-center">${i.qty}</span><span class="text-right">₹${(i.sellingPrice * i.qty).toFixed(2)}</span></div>`).join('')}
         <div class="line"></div>
         <div class="row"><span>Subtotal</span><span>₹${showReceipt.subtotal.toFixed(2)}</span></div>
         ${showReceipt.discountAmt > 0 ? `<div class="row"><span>Discount (${showReceipt.discount}%)</span><span>-₹${showReceipt.discountAmt.toFixed(2)}</span></div>` : ''}
@@ -274,17 +277,53 @@ export default function Billing() {
           </div>
         </div>
         <div className="products-grid">
-          {filtered.map(p => (
-            <button key={p.id} className="product-card" onClick={() => addToCart(p)} disabled={p.stock <= 0}>
-              <div className="product-emoji">
-                {p.category === 'Tea' ? '🍵' : p.category === 'Coffee' ? '☕' : p.category === 'Milk' ? '🥛' :
-                 p.category === 'Meals' ? '🍛' : p.category === 'Snacks' ? '🍿' : p.category === 'Beverages' ? '🥤' : '🍪'}
-              </div>
-              <span className="product-name">{p.name}</span>
-              <span className="product-price">₹{p.sellingPrice}</span>
-              {p.stock <= 10 && <span className="product-stock-low">{p.stock} left</span>}
-            </button>
-          ))}
+          {filtered.map(p => {
+            const getIcon = (item) => {
+              const name = item.name.toLowerCase();
+              const cat = item.category.toLowerCase();
+              
+              if (name.includes('idli')) return '🍙';
+              if (name.includes('dosa')) return '🫓';
+              if (name.includes('poori')) return '🥟';
+              if (name.includes('parotta')) return '🫓';
+              if (name.includes('vada')) return '🍩';
+              if (name.includes('pongal')) return '🥘';
+              if (name.includes('chapathi')) return '🫓';
+              if (name.includes('biryani')) return '🍗';
+              if (name.includes('meals')) return '🍛';
+              
+              if (name.includes('orange')) return '🍊';
+              if (name.includes('apple')) return '🍎';
+              if (name.includes('pomegranate')) return '🏮';
+              if (name.includes('grapes')) return '🍇';
+              if (name.includes('pineapple')) return '🍍';
+              if (name.includes('watermelon')) return '🍉';
+              if (name.includes('lemon')) return '🍋';
+              if (name.includes('soda')) return '🥤';
+              if (name.includes('juice')) return '🍹';
+              
+              if (name.includes('ice cream')) return '🍦';
+              
+              if (name.includes('tea')) return '🍵';
+              if (name.includes('coffee')) return '☕';
+              if (name.includes('milk')) return '🥛';
+              
+              if (cat === 'biscuits') return '🍪';
+              if (cat === 'snacks') return '🍿';
+              if (cat === 'beverages') return '🥤';
+              
+              return '🍱';
+            };
+
+            return (
+              <button key={p.id} className="product-card" onClick={() => addToCart(p)} disabled={p.stock <= 0}>
+                <div className="product-emoji">{getIcon(p)}</div>
+                <span className="product-name">{p.name}</span>
+                <span className="product-price">₹{p.sellingPrice}</span>
+                {p.stock <= 10 && <span className="product-stock-low">{p.stock} left</span>}
+              </button>
+            );
+          })}
           {filtered.length === 0 && <div className="empty-grid">No products found</div>}
         </div>
 

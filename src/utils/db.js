@@ -35,14 +35,19 @@ export const db = {
     set(collection, items);
   },
   clear: (collection) => localStorage.removeItem(collection),
+  clearTransactions: () => {
+    localStorage.setItem('sales', JSON.stringify([]));
+    localStorage.setItem('tokens', JSON.stringify([]));
+    localStorage.setItem('expenses', JSON.stringify([]));
+  },
 };
 
 // Seed data
-export const CATEGORIES = ['Biscuits', 'Beverages', 'Snacks', 'Milk', 'Tea', 'Coffee', 'Meals'];
+export const CATEGORIES = ['Biscuits', 'Beverages', 'Snacks', 'Milk', 'Tea', 'Coffee', 'Meals', 'Tiffen', 'Juice', 'Ice Cream'];
 export const UNITS = ['kg', 'packets', 'litre', 'cups', 'pieces'];
 export const EXPENSE_CATEGORIES = ['Rent', 'Salary', 'Utilities', 'Purchase', 'Other'];
 export const PAYMENT_MODES = ['Cash', 'UPI', 'Card'];
-export const TOKEN_CATEGORIES = ['Tea', 'Coffee', 'Milk', 'Meals'];
+export const TOKEN_CATEGORIES = ['Tea', 'Coffee', 'Milk', 'Meals', 'Tiffen', 'Juice', 'Ice Cream'];
 
 export function seedData() {
   // Seed users
@@ -54,7 +59,8 @@ export function seedData() {
   }
 
   // Seed products
-  if (!get('products') || get('products').length === 0) {
+  const currentProducts = get('products') || [];
+  if (currentProducts.length === 0) {
     const products = [
       { id: 'p1', name: 'Marie Gold Biscuits', category: 'Biscuits', unit: 'packets', costPrice: 20, sellingPrice: 25, stock: 50 },
       { id: 'p2', name: 'Bourbon Chocolate', category: 'Biscuits', unit: 'packets', costPrice: 25, sellingPrice: 35, stock: 40 },
@@ -82,11 +88,91 @@ export function seedData() {
     set('products', products);
   }
 
+  // Add new items (Tiffen, Juice, Ice Cream, Jaggery options) if not present
+  const newItems = [
+    // Tiffen
+    { id: 't-1', name: 'Idli', category: 'Tiffen', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 't-2', name: 'Dosa', category: 'Tiffen', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 't-3', name: 'Poori', category: 'Tiffen', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 't-4', name: 'Pongal', category: 'Tiffen', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 't-5', name: 'Vada', category: 'Tiffen', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 't-6', name: 'Parotta', category: 'Tiffen', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 't-7', name: 'Chapathi', category: 'Tiffen', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 't-8', name: 'Plain Dosa', category: 'Tiffen', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 't-9', name: 'Podi Dosa', category: 'Tiffen', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 't-10', name: 'Onion Dosa', category: 'Tiffen', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 't-11', name: 'Masala Dosa', category: 'Tiffen', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 't-12', name: 'Onion Uttappam', category: 'Tiffen', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 't-13', name: 'Ghee Roast', category: 'Tiffen', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 't-14', name: 'Veg Kothu Parotta', category: 'Tiffen', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 't-15', name: 'Egg Kothu Parotta', category: 'Tiffen', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 't-16', name: 'Chicken Kothu Parotta', category: 'Tiffen', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    
+    // Juice
+    { id: 'j-1', name: 'Orange Juice', category: 'Juice', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'j-2', name: 'Apple Juice', category: 'Juice', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'j-3', name: 'Pomegranate Juice', category: 'Juice', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'j-4', name: 'Sathukudi Juice', category: 'Juice', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'j-5', name: 'Mulampazham Juice', category: 'Juice', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'j-6', name: 'Grapes Juice', category: 'Juice', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'j-7', name: 'Pineapple Juice', category: 'Juice', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'j-8', name: 'Lemon Juice', category: 'Juice', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'j-9', name: 'Lemon Soda', category: 'Juice', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'j-10', name: 'Watermelon Juice', category: 'Juice', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'j-11', name: 'Sugarcane Juice', category: 'Juice', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    
+    // Ice Cream
+    { id: 'ic-1', name: 'Vanilla Ice Cream', category: 'Ice Cream', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'ic-2', name: 'Chocolate Ice Cream', category: 'Ice Cream', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'ic-3', name: 'Strawberry Ice Cream', category: 'Ice Cream', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'ic-4', name: 'Butterscotch Ice Cream', category: 'Ice Cream', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'ic-5', name: 'Mango Ice Cream', category: 'Ice Cream', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'ic-6', name: 'Pista Ice Cream', category: 'Ice Cream', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'ic-7', name: 'Cone Ice Cream', category: 'Ice Cream', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'ic-8', name: 'Cup Ice Cream', category: 'Ice Cream', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'ic-9', name: 'Sundae Ice Cream', category: 'Ice Cream', unit: 'pieces', costPrice: 10, sellingPrice: 15, stock: 500 },
+    
+    // Milk Varieties
+    { id: 'm-j-1', name: 'Jaggery Tea (Karupatti Tea)', category: 'Tea', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-2', name: 'Jaggery Coffee (Karupatti Coffee)', category: 'Coffee', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-3', name: 'Jaggery Milk (Karupatti Milk)', category: 'Milk', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-4', name: 'Black Tea', category: 'Tea', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-5', name: 'Jaggery Black Tea', category: 'Tea', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-6', name: 'Black Coffee', category: 'Coffee', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-7', name: 'Jaggery Black Coffee', category: 'Coffee', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-8', name: 'Sukku Malli Coffee', category: 'Coffee', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-9', name: 'Jaggery Sukku Malli Coffee', category: 'Coffee', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-10', name: 'Sukku Malli Milk', category: 'Milk', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-11', name: 'Jaggery Sukku Malli Milk', category: 'Milk', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-12', name: 'Jaggery Ginger Tea', category: 'Tea', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-13', name: 'Badam Milk', category: 'Milk', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-14', name: 'Jaggery Badam Milk', category: 'Milk', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-15', name: 'Rose Milk', category: 'Milk', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-16', name: 'Jaggery Rose Milk', category: 'Milk', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-17', name: 'Pista Milk', category: 'Milk', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-18', name: 'Jaggery Pista Milk', category: 'Milk', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-19', name: 'Lemon Tea', category: 'Tea', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+    { id: 'm-j-20', name: 'Jaggery Lemon Tea', category: 'Tea', unit: 'cups', costPrice: 10, sellingPrice: 15, stock: 500 },
+  ];
+
+  const updatedProducts = get('products') || [];
+  let changed = false;
+  newItems.forEach(item => {
+    if (!updatedProducts.find(p => p.name === item.name)) {
+      updatedProducts.push(item);
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    set('products', updatedProducts);
+  }
+
   // Seed settings
   if (!get('settings')) {
     set('settings', {
-      shopName: 'Hotel Silambu',
-      address: '123 Main Street, Chennai - 600001',
+      shopName: 'Sri Silambu Karupatti Coffee',
+      address: 'No: 15, Puthupalayam, Bengaluru Main Road, Chengam, Tiruvannamalai - 606709\n📞 97866 98585, +91 99941 15599',
       gst: '',
       fontSize: 'medium',
       alignment: 'center',
@@ -100,3 +186,4 @@ export function seedData() {
   if (!get('tokens')) set('tokens', []);
   if (!get('customers')) set('customers', []);
 }
+

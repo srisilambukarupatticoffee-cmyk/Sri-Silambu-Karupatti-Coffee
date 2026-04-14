@@ -4,12 +4,15 @@ import { v4 as uuid } from 'uuid';
 import { LuTicket, LuPlus, LuHash, LuPrinter } from 'react-icons/lu';
 import './Pages.css';
 
-const TOKEN_EMOJIS = { Tea: '🍵', Coffee: '☕', Milk: '🥛', Meals: '🍛' };
+const TOKEN_EMOJIS = { Tea: '🍵', Coffee: '☕', Milk: '🥛', Meals: '🍛', Tiffen: '🫓', Juice: '🍹', 'Ice Cream': '🍦' };
 const TOKEN_TYPES = {
-  Tea: ['Regular', 'Masala', 'Ginger', 'Lemon', 'Green'],
-  Coffee: ['Filter', 'Black', 'Cappuccino', 'Espresso'],
+  Tea: ['Regular', 'Masala', 'Ginger', 'Lemon', 'Green', 'Jaggery Tea', 'Black Tea', 'Jaggery Black Tea', 'Jaggery Ginger Tea', 'Jaggery Lemon Tea'],
+  Coffee: ['Filter', 'Black', 'Cappuccino', 'Espresso', 'Jaggery Coffee', 'Jaggery Black Coffee', 'Sukku Malli Coffee', 'Jaggery Sukku Malli Coffee'],
   Meals: ['Veg Meal', 'Non-Veg Meal', 'Special Meal'],
-  Milk: ['Hot Milk', 'Badam Milk'],
+  Milk: ['Hot Milk', 'Badam Milk', 'Jaggery Milk', 'Sukku Malli Milk', 'Jaggery Sukku Malli Milk', 'Jaggery Badam Milk', 'Rose Milk', 'Jaggery Rose Milk', 'Pista Milk', 'Jaggery Pista Milk'],
+  Tiffen: ['Idli', 'Dosa', 'Poori', 'Pongal', 'Vada', 'Parotta', 'Chapathi', 'Plain Dosa', 'Podi Dosa', 'Onion Dosa', 'Masala Dosa', 'Onion Uttappam', 'Ghee Roast', 'Veg Kothu Parotta', 'Egg Kothu Parotta', 'Chicken Kothu Parotta'],
+  Juice: ['Orange Juice', 'Apple Juice', 'Pomegranate Juice', 'Sathukudi Juice', 'Mulampazham Juice', 'Grapes Juice', 'Pineapple Juice', 'Lemon Juice', 'Lemon Soda', 'Watermelon Juice', 'Sugarcane Juice'],
+  'Ice Cream': ['Vanilla Ice Cream', 'Chocolate Ice Cream', 'Strawberry Ice Cream', 'Butterscotch Ice Cream', 'Mango Ice Cream', 'Pista Ice Cream', 'Cone Ice Cream', 'Cup Ice Cream', 'Sundae Ice Cream'],
 };
 
 export default function Tokens() {
@@ -34,26 +37,31 @@ export default function Tokens() {
   const handlePrint = (token) => {
     const settings = db.getAll('settings') || {};
     const printWindow = window.open('', '_blank', 'width=300,height=400');
-    const shopName = typeof settings === 'object' && !Array.isArray(settings) ? settings.shopName : 'Hotel Silambu';
+    const shopName = typeof settings === 'object' && !Array.isArray(settings) ? settings.shopName : 'Sri Silambu Karupatti Coffee';
+    const address = typeof settings === 'object' && !Array.isArray(settings) ? settings.address : '';
     
     printWindow.document.write(`
       <html>
       <head><title>Token</title>
       <style>
-        body { font-family: 'Courier New', monospace; width: 200px; margin: 0 auto; padding: 10px; text-align: center; }
+        @page { margin: 0; }
+        body { font-family: 'Courier New', monospace; width: 220px; margin: 0 auto; padding: 10mm 5mm; text-align: center; font-size: 11px; }
         .logo-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 5px; }
-        .logo-img { width: 30px; height: 30px; object-fit: contain; }
-        .token-num { font-size: 40px; font-weight: bold; margin: 10px 0; border: 2px solid #000; display: inline-block; padding: 10px 20px; }
-        .details { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
-        .qty { font-size: 20px; margin: 5px 0; }
+        .logo-img { width: 35px; height: 35px; object-fit: contain; }
+        .shop-name { font-size: 14px; font-weight: bold; }
+        .address { font-size: 9px; margin-bottom: 5px; white-space: pre-line; line-height: 1.1; }
+        .token-num { font-size: 45px; font-weight: bold; margin: 10px 0; border: 2px solid #000; display: inline-block; padding: 10px 25px; }
+        .details { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+        .qty { font-size: 22px; margin: 5px 0; }
         .info { font-size: 12px; margin-top: 10px; border-top: 1px dashed #000; padding-top: 5px; }
       </style>
       </head>
       <body>
         <div class="logo-row">
           <img src="/silambu_logo.png" class="logo-img" />
-          <div style="font-size: 14px; font-weight: bold;">${shopName}</div>
+          <div class="shop-name">${shopName}</div>
         </div>
+        <div class="address">${address}</div>
         <div style="font-size: 12px;">TOKEN RECEIPT</div>
         <div class="token-num">#${token.tokenNumber}</div>
         <div class="details">${token.type || token.category}</div>

@@ -7,8 +7,8 @@ export default function Settings() {
   const [settings, setSettings] = useState(() => {
     const s = localStorage.getItem('settings');
     return s ? JSON.parse(s) : {
-      shopName: 'Hotel Silambu',
-      address: '123 Main Street, Chennai - 600001',
+      shopName: 'Sri Silambu Karupatti Coffee',
+      address: 'No: 15, Puthupalayam, Bengaluru Main Road, Chengam, Tiruvannamalai - 606709\n📞 97866 98585, +91 99941 15599',
       gst: '',
       fontSize: 'medium',
       alignment: 'center',

@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Token POS',
-        short_name: 'TokenPOS',
+        name: 'Sri Silambu Karupatti Coffee',
+        short_name: 'SilambuCoffee',
         description: 'Restaurant Billing System',
         theme_color: '#ffffff',
         background_color: '#ffffff',

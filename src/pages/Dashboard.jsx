@@ -4,18 +4,23 @@ import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
-import { LuTrendingUp, LuTrendingDown, LuDollarSign, LuShoppingCart, LuTicket, LuWallet } from 'react-icons/lu';
+import { 
+  LuTrendingUp, LuTrendingDown, LuShoppingCart, LuTicket, 
+  LuWallet, LuPackage, LuCheck, LuTriangleAlert, LuTrash2, LuPrinter
+} from 'react-icons/lu';
 import './Pages.css';
 
 const COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
 
 export default function Dashboard() {
   const [period, setPeriod] = useState('today');
+  const [showWipeModal, setShowWipeModal] = useState(false);
 
   const data = useMemo(() => {
     const sales = db.getAll('sales');
     const expenses = db.getAll('expenses');
     const tokens = db.getAll('tokens');
+    const products = db.getAll('products');
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
     const monthStr = now.toISOString().slice(0, 7);
@@ -41,6 +46,11 @@ export default function Dashboard() {
     const monthProfit = monthRevenue - monthExpenseTotal - monthCost;
     const todayTokenRevenue = sumTotal(todayTokens);
     const monthTokenRevenue = sumTotal(monthTokens);
+
+    // Inventory metrics
+    const totalItems = products.length;
+    const highStock = products.filter(p => p.stock > 30).length;
+    const lowStock = products.filter(p => p.stock <= 10).length;
 
     // Category-wise sales
     const categorySales = {};
@@ -97,9 +107,91 @@ export default function Dashboard() {
       monthTokenCount: monthTokens.reduce((s, t) => s + (t.qty || 1), 0),
       todaySalesCount: todaySales.length,
       monthSalesCount: monthSales.length,
-      categoryData, dailyData, topProducts, tokenData
+      totalItems, highStock, lowStock,
+      categoryData, dailyData, topProducts, tokenData,
+      todaySales, todayTokens
     };
   }, [period]);
+
+  const handlePrintDaySummary = () => {
+    const settings = db.getAll('settings') || {};
+    const shopName = settings.shopName || 'Sri Silambu Hotel and Bakkery';
+    
+    // Aggregate items sold today
+    const itemsSummary = {};
+    data.todaySales.forEach(s => {
+      s.items.forEach(item => {
+        if (!itemsSummary[item.name]) itemsSummary[item.name] = { qty: 0, total: 0 };
+        itemsSummary[item.name].qty += item.qty;
+        itemsSummary[item.name].total += (item.sellingPrice * item.qty);
+      });
+    });
+
+    // Add token sales
+    data.todayTokens.forEach(t => {
+      const name = `${t.type} (Token)`;
+      if (!itemsSummary[name]) itemsSummary[name] = { qty: 0, total: 0 };
+      itemsSummary[name].qty += t.qty;
+      itemsSummary[name].total += (t.total || 0);
+    });
+
+    const printWindow = window.open('', '_blank', 'width=320,height=600');
+    const address = settings.address || '';
+
+    printWindow.document.write(`
+      <html>
+      <head><title>Daily Closing Summary</title>
+      <style>
+        @page { margin: 0; }
+        body { font-family: 'Courier New', monospace; width: 260px; margin: 0 auto; padding: 10mm 5mm; font-size: 11px; }
+        .center { text-align: center; }
+        .bold { font-weight: bold; }
+        .line { border-top: 1px dashed #000; margin: 6px 0; }
+        .grid { display: grid; grid-template-columns: 1fr 40px 70px; gap: 5px; align-items: start; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        h2 { margin: 5px 0; font-size: 15px; }
+        p { margin: 2px 0; white-space: pre-line; line-height: 1.2; }
+      </style>
+      </head>
+      <body>
+        <div class="center">
+          <h2 class="bold">${shopName}</h2>
+          <div style="font-size: 10px; margin-bottom: 5px; white-space: pre-line;">${address}</div>
+          <h2 class="bold" style="text-decoration: underline;">DAY CLOSING SUMMARY</h2>
+          <p>Date: ${new Date().toLocaleDateString()}</p>
+        </div>
+        <div class="line"></div>
+        <div class="grid bold"><span>Item</span><span class="text-center">Qty</span><span class="text-right">Amt</span></div>
+        <div class="line"></div>
+        ${Object.entries(itemsSummary).map(([name, d]) => `
+          <div class="grid">
+            <span>${name}</span>
+            <span class="text-center">${d.qty.toFixed(d.qty % 1 === 0 ? 0 : 2)}</span>
+            <span class="text-right">₹${d.total.toFixed(2)}</span>
+          </div>
+        `).join('')}
+        <div class="line"></div>
+        <div class="row bold"><span>SALES TOTAL</span><span>₹${data.todayRevenue.toFixed(2)}</span></div>
+        <div class="row bold"><span>TOKEN TOTAL</span><span>₹${data.todayTokenRevenue.toFixed(2)}</span></div>
+        <div class="row bold" style="font-size: 14px; margin-top: 5px;">
+          <span>GRAND TOTAL</span><span>₹${(data.todayRevenue + data.todayTokenRevenue).toFixed(2)}</span>
+        </div>
+        <div class="row"><span>Total Expenses</span><span>-₹${data.todayExpenseTotal.toFixed(2)}</span></div>
+        <div class="line"></div>
+        <div class="center"><p>-- End of Summary --</p></div>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  const handleWipeData = () => {
+    db.clearTransactions();
+    setShowWipeModal(false);
+    window.location.reload();
+  };
 
   const kpis = [
     {
@@ -128,6 +220,27 @@ export default function Dashboard() {
       icon: <LuTicket />,
       color: '#f59e0b',
     },
+    {
+      label: 'Inventory Items',
+      value: data.totalItems,
+      sub: 'Total Products',
+      icon: <LuPackage />,
+      color: '#8b5cf6',
+    },
+    {
+      label: 'High Stock',
+      value: data.highStock,
+      sub: 'Items > 30 units',
+      icon: <LuCheck />,
+      color: '#10b981',
+    },
+    {
+      label: 'Low Stock',
+      value: data.lowStock,
+      sub: 'Items ≤ 10 units',
+      icon: <LuTriangleAlert />,
+      color: '#f59e0b',
+    },
   ];
 
   return (
@@ -137,9 +250,17 @@ export default function Dashboard() {
           <h1 className="page-title">Dashboard</h1>
           <p className="page-subtitle">Financial overview & analytics</p>
         </div>
-        <div className="period-toggle">
-          <button className={period === 'today' ? 'active' : ''} onClick={() => setPeriod('today')}>Today</button>
-          <button className={period === 'month' ? 'active' : ''} onClick={() => setPeriod('month')}>This Month</button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button className="btn btn-primary" onClick={handlePrintDaySummary}>
+            <LuPrinter /> Day Close Print
+          </button>
+          <button className="btn btn-danger" onClick={() => setShowWipeModal(true)}>
+            <LuTrash2 /> Wipe Transactions
+          </button>
+          <div className="period-toggle">
+            <button className={period === 'today' ? 'active' : ''} onClick={() => setPeriod('today')}>Today</button>
+            <button className={period === 'month' ? 'active' : ''} onClick={() => setPeriod('month')}>This Month</button>
+          </div>
         </div>
       </div>
 
@@ -269,6 +390,25 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Wipe Confirmation Modal */}
+      {showWipeModal && (
+        <div className="modal-overlay" onClick={() => setShowWipeModal(false)}>
+          <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
+            <div className="modal-header" style={{ textAlign: 'center', display: 'block' }}>
+              <div style={{ fontSize: '40px', color: '#ef4444', marginBottom: '10px' }}><LuTriangleAlert /></div>
+              <h2 className="modal-title">Wipe Transactions?</h2>
+              <p className="modal-subtitle">This will clear all Sales, Tokens, and Expenses records. Inventory and settings will be preserved.</p>
+            </div>
+            <div className="modal-actions" style={{ justifyContent: 'center', marginTop: '20px' }}>
+              <button className="btn btn-ghost" onClick={() => setShowWipeModal(false)}>Cancel</button>
+              <button className="btn btn-danger" onClick={handleWipeData}>
+                <LuTrash2 /> Wipe ALL Records
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

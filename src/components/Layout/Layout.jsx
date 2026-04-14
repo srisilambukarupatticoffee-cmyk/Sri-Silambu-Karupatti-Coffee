@@ -49,7 +49,7 @@ export default function Layout({ children }) {
         <div className="sidebar-header">
           <div className="brand">
             <img src="/silambu_logo.png" alt="Silambu" className="brand-logo" />
-            {!collapsed && <span className="brand-text">Hotel Silambu</span>}
+            {!collapsed && <span className="brand-text">Sri Silambu Karupatti Coffee</span>}
           </div>
           <button className="collapse-btn desktop-only" onClick={() => setCollapsed(!collapsed)} title={collapsed ? 'Expand' : 'Collapse'}>
             <LuChevronLeft className={collapsed ? 'rotated' : ''} />
