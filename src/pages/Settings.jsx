@@ -4,23 +4,63 @@ import { LuSave, LuPrinter, LuSettings2 } from 'react-icons/lu';
 import './Pages.css';
 
 export default function Settings() {
-  const [settings, setSettings] = useState(() => {
-    const s = localStorage.getItem('settings');
-    return s ? JSON.parse(s) : {
-      shopName: 'Sri Silambu Karupatti Coffee',
-      address: 'No: 15, Puthupalayam, Bengaluru Main Road, Chengam, Tiruvannamalai - 606709\n📞 97866 98585, +91 99941 15599',
-      gst: '',
-      fontSize: 'medium',
-      alignment: 'center',
-      autoPrint: false,
-    };
+export default function Settings() {
+  const [settings, setSettings] = useState({
+    shopName: 'Sri Silambu Karupatti Coffee',
+    address: 'No: 15, Puthupalayam, Bengaluru Main Road, Chengam, Tiruvannamalai - 606709\n📞 97866 98585, +91 99941 15599',
+    gst: '',
+    fontSize: 'medium',
+    alignment: 'center',
+    autoPrint: false,
   });
+  const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
+  const [migrating, setMigrating] = useState(false);
 
-  const handleSave = () => {
-    localStorage.setItem('settings', JSON.stringify(settings));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    setLoading(true);
+    try {
+      const data = await db.getAll('settings');
+      if (data && data.length > 0) {
+        setSettings(data[0]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const data = await db.getAll('settings');
+      if (data && data.length > 0) {
+        await db.update('settings', data[0].id, settings);
+      } else {
+        await db.add('settings', { ...settings, id: 'main-settings' });
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMigrate = async () => {
+    if (!confirm('This will copy all your local products and data to MongoDB. Continue?')) return;
+    setMigrating(true);
+    try {
+      await db.migrateFromLocalStorage();
+      alert('Migration successful! Your data is now in the cloud.');
+      window.location.reload();
+    } catch (err) {
+      alert('Migration failed: ' + err.message);
+    } finally {
+      setMigrating(false);
+    }
   };
 
   const update = (key, value) => setSettings(prev => ({ ...prev, [key]: value }));
@@ -38,6 +78,22 @@ export default function Settings() {
       </div>
 
       <div className="settings-grid">
+        {/* Cloud Migration */}
+        <div className="section-card">
+          <h3 className="section-title">☁️ Cloud Migration</h3>
+          <div className="settings-form">
+            <p className="setting-help">Transfer your local data (products, sales, settings) to MongoDB Atlas.</p>
+            <button 
+              className="btn btn-outline" 
+              onClick={handleMigrate}
+              disabled={migrating}
+              style={{ width: '100%', marginTop: '10px' }}
+            >
+              {migrating ? 'Migrating...' : 'Push Data to Cloud'}
+            </button>
+          </div>
+        </div>
+
         {/* Receipt Header */}
         <div className="section-card">
           <h3 className="section-title"><LuPrinter /> Receipt Header</h3>
@@ -121,6 +177,14 @@ export default function Settings() {
           </div>
         </div>
       </div>
+      {(loading || migrating) && (
+        <div className="modal-overlay" style={{ zIndex: 9999 }}>
+          <div className="spinner-large" />
+          <p style={{ color: 'white', marginTop: '20px' }}>
+            {migrating ? 'Migrating your data to MongoDB...' : 'Loading settings...'}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

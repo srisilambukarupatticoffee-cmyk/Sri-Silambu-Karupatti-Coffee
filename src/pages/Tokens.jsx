@@ -16,29 +16,46 @@ const TOKEN_TYPES = {
 };
 
 export default function Tokens() {
-  const [tokens, setTokens] = useState(() => db.getAll('tokens'));
+export default function Tokens() {
+  const [tokens, setTokens] = useState([]);
+  const [settings, setSettings] = useState({});
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCat, setSelectedCat] = useState(null);
   const [selectedType, setSelectedType] = useState('');
   const [qty, setQty] = useState(1);
 
   const todayStr = new Date().toISOString().split('T')[0];
 
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [t, setts, p] = await Promise.all([
+        db.getAll('tokens'),
+        db.getAll('settings').then(res => res[0] || {}),
+        db.getAll('products')
+      ]);
+      setTokens(t);
+      setSettings(setts);
+      setProducts(p);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const todayTokens = useMemo(() =>
     tokens.filter(t => t.date?.startsWith(todayStr)),
     [tokens, todayStr]
   );
 
-  const getNextToken = () => {
-    const todayAll = db.getAll('tokens').filter(t => t.date?.startsWith(todayStr));
-    // Since we consolidate, number of tokens is count of records + 1
-    return todayAll.length + 1;
-  };
-
   const handlePrint = (token) => {
-    const settings = db.getAll('settings') || {};
     const printWindow = window.open('', '_blank', 'width=300,height=400');
-    const shopName = typeof settings === 'object' && !Array.isArray(settings) ? settings.shopName : 'Sri Silambu Karupatti Coffee';
-    const address = typeof settings === 'object' && !Array.isArray(settings) ? settings.address : '';
+    const shopName = settings.shopName || 'Sri Silambu Karupatti Coffee';
+    const address = settings.address || '';
     
     printWindow.document.write(`
       <html>
@@ -81,51 +98,56 @@ export default function Tokens() {
     }, 250);
   };
 
-  const issueToken = () => {
+  const issueToken = async () => {
     if (!selectedCat) return;
-    const typeLabel = selectedType || selectedCat;
-    
-    // Find price (fallback to defaults if product not found)
-    const product = db.getAll('products').find(p => p.category === selectedCat && p.name.includes(typeLabel));
-    const price = product ? product.sellingPrice : selectedCat === 'Tea' ? 15 : selectedCat === 'Coffee' ? 20 : selectedCat === 'Milk' ? 60 : 70;
-    const totalPrice = price * qty;
+    setLoading(true);
+    try {
+      const typeLabel = selectedType || selectedCat;
+      
+      // Find price
+      const product = products.find(p => p.category === selectedCat && (p.name?.includes(typeLabel) || p.name === typeLabel));
+      const price = product ? (product.sellingPrice || 0) : selectedCat === 'Tea' ? 15 : selectedCat === 'Coffee' ? 20 : selectedCat === 'Milk' ? 60 : 70;
+      const totalPrice = price * qty;
 
-    const tokenNum = getNextToken();
-    const newTask = {
-      id: uuid(),
-      tokenNumber: tokenNum,
-      category: selectedCat,
-      type: typeLabel,
-      price,
-      qty,
-      total: totalPrice,
-      date: new Date().toISOString(),
-    };
+      const tokenNum = todayTokens.length + 1;
+      const newTask = {
+        id: uuid(),
+        tokenNumber: tokenNum,
+        category: selectedCat,
+        type: typeLabel,
+        price,
+        qty,
+        total: totalPrice,
+        date: new Date().toISOString(),
+      };
 
-    db.add('tokens', newTask);
+      await db.add('tokens', newTask);
 
-    // Also add as a sale for dashboard
-    db.add('sales', {
-      id: uuid(),
-      date: new Date().toISOString(),
-      items: [{ name: `${typeLabel} Token`, category: selectedCat, qty, sellingPrice: price, costPrice: price * 0.3 }],
-      subtotal: totalPrice,
-      discount: 0,
-      discountAmt: 0,
-      total: totalPrice,
-      totalCost: price * 0.3 * qty,
-      paymentMode: 'Cash',
-      customerName: 'Token Customer',
-      isToken: true,
-      tokenId: newTask.id
-    });
+      // Also add as a sale for dashboard
+      await db.add('sales', {
+        id: uuid(),
+        date: new Date().toISOString(),
+        items: [{ id: product?.id || uuid(), name: `${typeLabel} Token`, category: selectedCat, qty, sellingPrice: price, costPrice: price * 0.3 }],
+        subtotal: totalPrice,
+        discount: 0,
+        discountAmt: 0,
+        total: totalPrice,
+        totalCost: price * 0.3 * qty,
+        paymentMode: 'Cash',
+        customerName: 'Token Customer',
+        isToken: true,
+        tokenId: newTask.id
+      });
 
-    setTokens(db.getAll('tokens'));
-    handlePrint(newTask);
-    
-    setQty(1);
-    setSelectedCat(null);
-    setSelectedType('');
+      await loadData();
+      handlePrint(newTask);
+      
+      setQty(1);
+      setSelectedCat(null);
+      setSelectedType('');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const categorySummary = useMemo(() => {

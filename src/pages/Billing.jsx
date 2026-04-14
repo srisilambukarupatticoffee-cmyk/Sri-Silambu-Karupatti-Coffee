@@ -8,7 +8,11 @@ import {
 import './Billing.css';
 
 export default function Billing() {
-  const [products] = useState(() => db.getAll('products'));
+export default function Billing() {
+  const [products, setProducts] = useState([]);
+  const [settings, setSettings] = useState({});
+  const [todaySales, setTodaySales] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('All');
   const [cart, setCart] = useState([]);
@@ -19,9 +23,32 @@ export default function Billing() {
   const [weightModal, setWeightModal] = useState(null); // { product, weight, unitType: 'g'|'kg' }
   const receiptRef = useRef(null);
 
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const [p, setts, allSales] = await Promise.all([
+        db.getAll('products'),
+        db.getAll('settings').then(res => res[0] || {}),
+        db.getAll('sales')
+      ]);
+      setProducts(p);
+      setSettings(setts);
+      setTodaySales(allSales.filter(s => s.date?.startsWith(today)));
+    } catch (err) {
+      console.error('Failed to load billing data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filtered = useMemo(() => {
     return products.filter(p => {
-      const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
+      const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase());
       const matchCat = catFilter === 'All' || p.category === catFilter;
       return matchSearch && matchCat;
     });
@@ -65,67 +92,72 @@ export default function Billing() {
   const removeItem = (id) => setCart(prev => prev.filter(c => c.id !== id));
   const clearCart = () => { setCart([]); setDiscount(0); setCustomerName(''); };
 
-  const subtotal = cart.reduce((sum, c) => sum + c.sellingPrice * c.qty, 0);
+  const subtotal = cart.reduce((sum, c) => sum + (c.sellingPrice || 0) * c.qty, 0);
   const discountAmt = (subtotal * discount) / 100;
   const total = subtotal - discountAmt;
-  const totalCost = cart.reduce((sum, c) => sum + c.costPrice * c.qty, 0);
+  const totalCost = cart.reduce((sum, c) => sum + (c.costPrice || 0) * c.qty, 0);
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (cart.length === 0) return;
+    setLoading(true);
 
-    const sale = {
-      id: uuid(),
-      date: new Date().toISOString(),
-      items: cart.map(c => ({ id: c.id, name: c.name, category: c.category, qty: c.qty, sellingPrice: c.sellingPrice, costPrice: c.costPrice, unit: c.unit })),
-      subtotal,
-      discount,
-      discountAmt,
-      total,
-      totalCost,
-      paymentMode,
-      customerName: customerName || 'Walk-in',
-    };
+    try {
+      const sale = {
+        id: uuid(),
+        date: new Date().toISOString(),
+        items: cart.map(c => ({ id: c.id, name: c.name, category: c.category, qty: c.qty, sellingPrice: c.sellingPrice, costPrice: c.costPrice, unit: c.unit })),
+        subtotal,
+        discount,
+        discountAmt,
+        total,
+        totalCost,
+        paymentMode,
+        customerName: customerName || 'Walk-in',
+      };
 
-    db.add('sales', sale);
+      await db.add('sales', sale);
 
-    // Update stock
-    cart.forEach(c => {
-      const product = db.getById('products', c.id);
-      if (product) {
-        db.update('products', c.id, { stock: Math.max(0, product.stock - c.qty) });
+      // Update stock async
+      for (const c of cart) {
+        const product = products.find(p => p.id === c.id);
+        if (product) {
+          await db.update('products', c.id, { stock: Math.max(0, (product.stock || 0) - c.qty) });
+        }
       }
-    });
 
-    // Save customer if named
-    if (customerName) {
-      const customers = db.getAll('customers');
-      const existing = customers.find(c => c.name.toLowerCase() === customerName.toLowerCase());
-      if (existing) {
-        db.update('customers', existing.id, {
-          purchases: [...(existing.purchases || []), sale.id],
-          totalSpent: (existing.totalSpent || 0) + total,
-        });
-      } else {
-        db.add('customers', {
-          id: uuid(),
-          name: customerName,
-          phone: '',
-          purchases: [sale.id],
-          totalSpent: total,
-          createdAt: new Date().toISOString(),
-        });
+      // Save customer if named
+      if (customerName) {
+        const customers = await db.getAll('customers');
+        const existing = customers.find(c => c.name?.toLowerCase() === customerName.toLowerCase());
+        if (existing) {
+          await db.update('customers', existing.id, {
+            purchases: [...(existing.purchases || []), sale.id],
+            totalSpent: (existing.totalSpent || 0) + total,
+          });
+        } else {
+          await db.add('customers', {
+            id: uuid(),
+            name: customerName,
+            phone: '',
+            purchases: [sale.id],
+            totalSpent: total,
+            createdAt: new Date().toISOString(),
+          });
+        }
       }
+
+      setShowReceipt(sale);
+      await loadData(); // Reload for stats
+    } finally {
+      setLoading(false);
     }
-
-    setShowReceipt(sale);
   };
 
   const handlePrint = () => {
-    const settings = db.getAll('settings') || {};
     const printWindow = window.open('', '_blank', 'width=320,height=600');
-    const shopName = typeof settings === 'object' && !Array.isArray(settings) ? settings.shopName : 'Sri Silambu Karupatti Coffee';
-    const address = typeof settings === 'object' && !Array.isArray(settings) ? settings.address : '';
-    const gst = typeof settings === 'object' && !Array.isArray(settings) ? settings.gst : '';
+    const shopName = settings.shopName || 'Sri Silambu Karupatti Coffee';
+    const address = settings.address || '';
+    const gst = settings.gst || '';
 
     printWindow.document.write(`
       <html>
@@ -160,7 +192,7 @@ export default function Billing() {
         <div class="line"></div>
         <div class="grid bold"><span>Item</span><span class="text-center">Qty</span><span class="text-right">Amt</span></div>
         <div class="line"></div>
-        ${showReceipt.items.map(i => `<div class="grid"><span>${i.name}</span><span class="text-center">${i.qty}</span><span class="text-right">₹${(i.sellingPrice * i.qty).toFixed(2)}</span></div>`).join('')}
+        ${showReceipt.items.map(i => `<div class="grid"><span>${i.name}</span><span class="text-center">${i.qty}</span><span class="text-right">₹${((i.sellingPrice || 0) * i.qty).toFixed(2)}</span></div>`).join('')}
         <div class="line"></div>
         <div class="row"><span>Subtotal</span><span>₹${showReceipt.subtotal.toFixed(2)}</span></div>
         ${showReceipt.discountAmt > 0 ? `<div class="row"><span>Discount (${showReceipt.discount}%)</span><span>-₹${showReceipt.discountAmt.toFixed(2)}</span></div>` : ''}
@@ -177,10 +209,7 @@ export default function Billing() {
     printWindow.print();
   };
 
-  const todaySales = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
-    return db.getAll('sales').filter(s => s.date?.startsWith(today));
-  }, [showReceipt]);
+  const todayTotal = todaySales.reduce((s, i) => s + (i.total || 0), 0);
 
   const todayTotal = todaySales.reduce((s, i) => s + (i.total || 0), 0);
 

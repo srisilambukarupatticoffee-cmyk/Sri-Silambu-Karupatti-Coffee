@@ -11,20 +11,18 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    setTimeout(() => {
-      const result = login(username, password);
-      setLoading(false);
-      if (result.success) {
-        navigate(result.user.role === 'admin' ? '/dashboard' : '/billing');
-      } else {
-        setError(result.error);
-      }
-    }, 500);
+    const result = await login(username, password);
+    setLoading(false);
+    if (result.success) {
+      navigate(result.user.role === 'admin' ? '/dashboard' : '/billing');
+    } else {
+      setError(result.error);
+    }
   };
 
   return (

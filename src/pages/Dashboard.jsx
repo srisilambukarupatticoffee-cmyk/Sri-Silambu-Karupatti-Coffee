@@ -15,12 +15,42 @@ const COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899'
 export default function Dashboard() {
   const [period, setPeriod] = useState('today');
   const [showWipeModal, setShowWipeModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  
+  // Raw Data State
+  const [sales, setSales] = useState([]);
+  const [expenses, setExpenses] = useState([]);
+  const [tokens, setTokens] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [settings, setSettings] = useState({});
 
-  const data = useMemo(() => {
-    const sales = db.getAll('sales');
-    const expenses = db.getAll('expenses');
-    const tokens = db.getAll('tokens');
-    const products = db.getAll('products');
+  useEffect(() => {
+    loadAllData();
+  }, []);
+
+  const loadAllData = async () => {
+    setLoading(true);
+    try {
+      const [s, e, t, p, setts] = await Promise.all([
+        db.getAll('sales'),
+        db.getAll('expenses'),
+        db.getAll('tokens'),
+        db.getAll('products'),
+        db.getAll('settings').then(res => res[0] || {}), // assuming settings is a collection with 1 doc
+      ]);
+      setSales(s);
+      setExpenses(e);
+      setTokens(t);
+      setProducts(p);
+      setSettings(setts);
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const dashboardStats = useMemo(() => {
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
     const monthStr = now.toISOString().slice(0, 7);
@@ -111,11 +141,17 @@ export default function Dashboard() {
       categoryData, dailyData, topProducts, tokenData,
       todaySales, todayTokens
     };
-  }, [period]);
+  }, [period, sales, expenses, tokens, products]);
+
+  const data = dashboardStats;
+
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handlePrintDaySummary = () => {
-    const settings = db.getAll('settings') || {};
-    const shopName = settings.shopName || 'Sri Silambu Hotel and Bakkery';
+    const shopName = settings.shopName || 'Sri Silambu Karupatti Coffee';
     
     // Aggregate items sold today
     const itemsSummary = {};
@@ -129,7 +165,7 @@ export default function Dashboard() {
 
     // Add token sales
     data.todayTokens.forEach(t => {
-      const name = `${t.type} (Token)`;
+      const name = `${t.type || t.category} (Token)`;
       if (!itemsSummary[name]) itemsSummary[name] = { qty: 0, total: 0 };
       itemsSummary[name].qty += t.qty;
       itemsSummary[name].total += (t.total || 0);
@@ -187,10 +223,11 @@ export default function Dashboard() {
     printWindow.print();
   };
 
-  const handleWipeData = () => {
-    db.clearTransactions();
+  const handleWipeData = async () => {
+    setLoading(true);
+    await db.clearTransactions();
     setShowWipeModal(false);
-    window.location.reload();
+    await loadAllData();
   };
 
   const kpis = [

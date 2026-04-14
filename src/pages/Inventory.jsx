@@ -9,7 +9,8 @@ const emptyProduct = { name: '', category: 'Biscuits', unit: 'packets', costPric
 
 export default function Inventory() {
   const { isAdmin } = useAuth();
-  const [products, setProducts] = useState(() => db.getAll('products'));
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('All');
   const [modal, setModal] = useState(null); // 'add' | 'edit' | 'stock'
@@ -17,11 +18,23 @@ export default function Inventory() {
   const [editId, setEditId] = useState(null);
   const [stockAdj, setStockAdj] = useState({ id: '', name: '', qty: '', type: 'add' });
 
-  const reload = () => setProducts(db.getAll('products'));
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    setLoading(true);
+    try {
+      const data = await db.getAll('products');
+      setProducts(data);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filtered = useMemo(() => {
     return products.filter(p => {
-      const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
+      const matchSearch = p.name?.toLowerCase().includes(search.toLowerCase());
       const matchCat = catFilter === 'All' || p.category === catFilter;
       return matchSearch && matchCat;
     });
@@ -29,7 +42,7 @@ export default function Inventory() {
 
   const lowStockItems = products.filter(p => p.stock <= 10);
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     const product = {
       ...form,
@@ -38,32 +51,32 @@ export default function Inventory() {
       stock: parseInt(form.stock),
     };
     if (editId) {
-      db.update('products', editId, product);
+      await db.update('products', editId, product);
     } else {
-      db.add('products', { ...product, id: uuid() });
+      await db.add('products', { ...product, id: uuid() });
     }
     setModal(null);
     setForm(emptyProduct);
     setEditId(null);
-    reload();
+    await loadProducts();
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm('Delete this product?')) {
-      db.remove('products', id);
-      reload();
+      await db.remove('products', id);
+      await loadProducts();
     }
   };
 
-  const handleStockUpdate = (e) => {
+  const handleStockUpdate = async (e) => {
     e.preventDefault();
-    const product = db.getById('products', stockAdj.id);
+    const product = products.find(p => p.id === stockAdj.id);
     if (!product) return;
     const qty = parseInt(stockAdj.qty);
-    const newStock = stockAdj.type === 'add' ? product.stock + qty : Math.max(0, product.stock - qty);
-    db.update('products', stockAdj.id, { stock: newStock });
+    const newStock = stockAdj.type === 'add' ? (product.stock || 0) + qty : Math.max(0, (product.stock || 0) - qty);
+    await db.update('products', stockAdj.id, { stock: newStock });
     setModal(null);
-    reload();
+    await loadProducts();
   };
 
   return (

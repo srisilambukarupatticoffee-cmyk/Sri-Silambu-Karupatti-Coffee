@@ -4,9 +4,29 @@ import { LuUsers, LuSearch, LuShoppingCart } from 'react-icons/lu';
 import './Pages.css';
 
 export default function Customers() {
-  const [customers] = useState(() => db.getAll('customers'));
+  const [customers, setCustomers] = useState([]);
+  const [sales, setSales] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [c, s] = await Promise.all([
+        db.getAll('customers'),
+        db.getAll('sales')
+      ]);
+      setCustomers(c);
+      setSales(s);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filtered = useMemo(() =>
     customers.filter(c => c.name?.toLowerCase().includes(search.toLowerCase())),
@@ -14,7 +34,6 @@ export default function Customers() {
   );
 
   const getHistory = (purchaseIds) => {
-    const sales = db.getAll('sales');
     return sales.filter(s => (purchaseIds || []).includes(s.id));
   };
 

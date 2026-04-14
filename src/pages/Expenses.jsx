@@ -9,13 +9,26 @@ const emptyExpense = { name: '', amount: '', category: 'Purchase', date: new Dat
 
 export default function Expenses() {
   const { isAdmin } = useAuth();
-  const [expenses, setExpenses] = useState(() => db.getAll('expenses'));
+  const [expenses, setExpenses] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState(emptyExpense);
   const [editId, setEditId] = useState(null);
   const [catFilter, setCatFilter] = useState('All');
 
-  const reload = () => setExpenses(db.getAll('expenses'));
+  useEffect(() => {
+    loadExpenses();
+  }, []);
+
+  const loadExpenses = async () => {
+    setLoading(true);
+    try {
+      const data = await db.getAll('expenses');
+      setExpenses(data);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filtered = useMemo(() => {
     return expenses.filter(e => catFilter === 'All' || e.category === catFilter)
@@ -27,24 +40,26 @@ export default function Expenses() {
   const todayTotal = expenses.filter(e => e.date?.startsWith(todayStr)).reduce((s, e) => s + (e.amount || 0), 0);
   const monthTotal = expenses.filter(e => e.date?.startsWith(monthStr)).reduce((s, e) => s + (e.amount || 0), 0);
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
+    setLoading(true);
     const expense = { ...form, amount: parseFloat(form.amount) };
     if (editId) {
-      db.update('expenses', editId, expense);
+      await db.update('expenses', editId, expense);
     } else {
-      db.add('expenses', { ...expense, id: uuid() });
+      await db.add('expenses', { ...expense, id: uuid() });
     }
     setModal(false);
     setForm(emptyExpense);
     setEditId(null);
-    reload();
+    await loadExpenses();
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm('Delete this expense?')) {
-      db.remove('expenses', id);
-      reload();
+      setLoading(true);
+      await db.remove('expenses', id);
+      await loadExpenses();
     }
   };
 

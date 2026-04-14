@@ -15,16 +15,20 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const login = (username, password) => {
-    const users = db.getAll('users');
-    const found = users.find(u => u.username === username && u.password === password);
-    if (found) {
-      const userData = { id: found.id, username: found.username, name: found.name, role: found.role };
-      setUser(userData);
-      localStorage.setItem('currentUser', JSON.stringify(userData));
-      return { success: true, user: userData };
+  const login = async (username, password) => {
+    try {
+      const users = await db.getAll('users');
+      const found = users.find(u => u.username === username && u.password === password);
+      if (found) {
+        const userData = { id: found.id, username: found.username, name: found.name, role: found.role };
+        setUser(userData);
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        return { success: true, user: userData };
+      }
+      return { success: false, error: 'Invalid username or password' };
+    } catch (error) {
+      return { success: false, error: 'Database connection failed' };
     }
-    return { success: false, error: 'Invalid username or password' };
   };
 
   const logout = () => {
