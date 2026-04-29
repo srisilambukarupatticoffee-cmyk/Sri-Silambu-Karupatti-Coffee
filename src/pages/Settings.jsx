@@ -180,7 +180,7 @@ export default function Settings() {
           <div className="receipt-preview" style={{ fontSize: settings.fontSize === 'small' ? '11px' : settings.fontSize === 'large' ? '15px' : '13px', textAlign: settings.alignment }}>
             <div className="receipt-preview-inner">
               <div className="receipt-preview-logo">
-                <img src="/src/assets/silambu_logo.png" alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
+                <img src="/silambu_logo.png" alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
               </div>
               <h3>{settings.shopName}</h3>
               <p>{settings.address}</p>

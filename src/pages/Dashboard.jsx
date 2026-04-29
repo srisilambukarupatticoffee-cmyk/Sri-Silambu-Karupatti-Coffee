@@ -278,9 +278,12 @@ export default function Dashboard() {
   return (
     <div className="page">
       <div className="page-header">
-        <div>
-          <h1 className="page-title">Dashboard</h1>
-          <p className="page-subtitle">Financial overview & analytics</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <img src="/silambu_logo.png" alt="Logo" style={{ width: '48px', height: '48px', objectFit: 'contain', background: 'white', padding: '4px', borderRadius: '10px', boxShadow: 'var(--shadow-sm)' }} />
+          <div>
+            <h1 className="page-title">Dashboard</h1>
+            <p className="page-subtitle">Financial overview & analytics</p>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button className="btn btn-primary" onClick={handlePrintDaySummary}>

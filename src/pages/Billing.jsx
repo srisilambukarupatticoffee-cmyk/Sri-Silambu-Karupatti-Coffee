@@ -217,7 +217,8 @@ export default function Billing() {
         <div className="receipt-view">
           <div className="receipt-card" ref={receiptRef}>
             <div className="receipt-header">
-              <span className="receipt-icon">✅</span>
+              <img src="/silambu_logo.png" alt="Logo" style={{ width: '60px', height: '60px', objectFit: 'contain', marginBottom: '10px' }} />
+              <div className="receipt-icon">✅</div>
               <h2>Payment Successful!</h2>
               <p className="receipt-total">₹{showReceipt.total.toFixed(2)}</p>
             </div>
