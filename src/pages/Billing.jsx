@@ -20,6 +20,7 @@ export default function Billing() {
   const [showReceipt, setShowReceipt] = useState(null);
   const [customerName, setCustomerName] = useState('');
   const [weightModal, setWeightModal] = useState(null); // { product, weight, unitType: 'g'|'kg' }
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const receiptRef = useRef(null);
 
   useEffect(() => {
@@ -275,8 +276,18 @@ export default function Billing() {
   }
 
   return (
-    <div className="billing-page">
-      {/* Products Panel */}
+    <div className={`billing-page ${isCartOpen ? 'cart-open' : ''}`}>
+      {/* Mobile Cart Overlay */}
+      {isCartOpen && <div className="cart-overlay mobile-only" onClick={() => setIsCartOpen(false)} />}
+
+      {/* Floating Cart Button (Mobile Only) */}
+      <button 
+        className={`mobile-cart-fab mobile-only ${cart.length > 0 ? 'has-items' : ''}`}
+        onClick={() => setIsCartOpen(!isCartOpen)}
+      >
+        <LuShoppingCart />
+        {cart.length > 0 && <span className="fab-badge">{cart.length}</span>}
+      </button>
       <div className="products-panel">
         <div className="panel-header">
           <div className="search-box">
@@ -361,8 +372,11 @@ export default function Billing() {
       </div>
 
       {/* Cart Panel */}
-      <div className="cart-panel">
+      <div className={`cart-panel ${isCartOpen ? 'mobile-show' : ''}`}>
         <div className="cart-header">
+          <button className="btn-close-cart mobile-only" onClick={() => setIsCartOpen(false)}>
+            <LuX />
+          </button>
           <div className="cart-title-row">
             <LuShoppingCart />
             <h2>Cart</h2>
@@ -470,7 +484,7 @@ export default function Billing() {
               </div>
             </div>
 
-            <button className="checkout-btn" onClick={handleCheckout}>
+            <button className="checkout-btn" onClick={() => { handleCheckout(); setIsCartOpen(false); }}>
               <LuCheck /> Checkout — ₹{total.toFixed(2)}
             </button>
           </div>

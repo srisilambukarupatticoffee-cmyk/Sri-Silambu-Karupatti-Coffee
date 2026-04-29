@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import {
@@ -43,10 +43,10 @@ export default function Layout({ children }) {
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <div className="brand">
+          <Link to="/dashboard" className="brand" onClick={() => setSidebarOpen(false)}>
             <img src="/silambu_logo.png" alt="Silambu" className="brand-logo" />
             {!collapsed && <span className="brand-text">Sri Silambu Karupatti Coffee</span>}
-          </div>
+          </Link>
           <button className="collapse-btn desktop-only" onClick={() => setCollapsed(!collapsed)} title={collapsed ? 'Expand' : 'Collapse'}>
             <LuChevronLeft className={collapsed ? 'rotated' : ''} />
           </button>
