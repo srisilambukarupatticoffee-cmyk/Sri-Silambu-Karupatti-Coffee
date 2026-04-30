@@ -53,7 +53,7 @@ export default function Tokens() {
   );
 
   const handlePrint = (token) => {
-    const printWindow = window.open('', '_blank', 'width=300,height=400');
+    const printWindow = window.open('', '_blank', 'width=380,height=500');
     const shopName = settings.shopName || 'Sri Silambu Karupatti Coffee';
     const address = settings.address || '';
     
@@ -62,15 +62,24 @@ export default function Tokens() {
       <head><title>Token</title>
       <style>
         @page { margin: 0; }
-        body { font-family: 'Courier New', monospace; width: 220px; margin: 0 auto; padding: 10mm 5mm; text-align: center; font-size: 11px; }
-        .logo-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 5px; }
-        .logo-img { width: 35px; height: 35px; object-fit: contain; }
-        .shop-name { font-size: 14px; font-weight: bold; }
-        .address { font-size: 9px; margin-bottom: 5px; white-space: pre-line; line-height: 1.1; }
-        .token-num { font-size: 45px; font-weight: bold; margin: 10px 0; border: 2px solid #000; display: inline-block; padding: 10px 25px; }
-        .details { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
-        .qty { font-size: 22px; margin: 5px 0; }
-        .info { font-size: 12px; margin-top: 10px; border-top: 1px dashed #000; padding-top: 5px; }
+        body { 
+          font-family: 'Inter', -apple-system, sans-serif; 
+          width: 285px; 
+          margin: 0 auto; 
+          padding: 4mm 2mm; 
+          text-align: center; 
+          color: #000;
+          font-weight: 500;
+        }
+        .logo-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 2px; }
+        .logo-img { width: 30px; height: 30px; object-fit: contain; }
+        .shop-name { font-size: 14px; font-weight: 800; text-transform: uppercase; }
+        .address { font-size: 9px; margin-bottom: 4px; white-space: pre-line; line-height: 1.1; font-weight: 700; }
+        .token-num { font-size: 55px; font-weight: 900; margin: 5px 0; border: 4px solid #000; display: inline-block; padding: 5px 20px; }
+        .details { font-size: 24px; font-weight: 900; margin-bottom: 2px; text-transform: uppercase; }
+        .qty { font-size: 26px; font-weight: 900; margin: 2px 0; }
+        .info { font-size: 13px; margin-top: 5px; border-top: 2px solid #000; padding-top: 5px; font-weight: 700; }
+        .dashed-line { border-top: 1px dashed #000; margin: 5px 0; }
       </style>
       </head>
       <body>
@@ -79,15 +88,16 @@ export default function Tokens() {
           <div class="shop-name">${shopName}</div>
         </div>
         <div class="address">${address}</div>
-        <div style="font-size: 12px;">TOKEN RECEIPT</div>
+        <div style="font-size: 14px; font-weight: 800;">TOKEN RECEIPT</div>
         <div class="token-num">#${token.tokenNumber}</div>
         <div class="details">${token.type || token.category}</div>
         <div class="qty">QTY: ${token.qty}</div>
         <div class="info">
-          ${new Date(token.date).toLocaleDateString()}<br>
-          ${new Date(token.date).toLocaleTimeString()}<br>
-          Price: ₹${token.total.toFixed(2)}
+          ${new Date(token.date).toLocaleDateString()} | ${new Date(token.date).toLocaleTimeString()}<br>
+          <div class="dashed-line"></div>
+          <span style="font-size: 15px;">Amount: ₹${token.total.toFixed(2)}</span>
         </div>
+        <div style="height: 10px;"></div>
       </body>
       </html>
     `);
@@ -95,7 +105,7 @@ export default function Tokens() {
     setTimeout(() => {
       printWindow.print();
       printWindow.close();
-    }, 250);
+    }, 500);
   };
 
   const issueToken = async () => {

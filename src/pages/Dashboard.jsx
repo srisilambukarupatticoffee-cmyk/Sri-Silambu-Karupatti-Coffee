@@ -166,7 +166,7 @@ export default function Dashboard() {
       itemsSummary[name].total += (t.total || 0);
     });
 
-    const printWindow = window.open('', '_blank', 'width=320,height=600');
+    const printWindow = window.open('', '_blank', 'width=380,height=800');
     const address = settings.address || '';
 
     printWindow.document.write(`
@@ -174,23 +174,36 @@ export default function Dashboard() {
       <head><title>Daily Closing Summary</title>
       <style>
         @page { margin: 0; }
-        body { font-family: 'Courier New', monospace; width: 260px; margin: 0 auto; padding: 10mm 5mm; font-size: 11px; }
+        body { 
+          font-family: 'Inter', -apple-system, sans-serif; 
+          width: 285px; 
+          margin: 0 auto; 
+          padding: 8mm 2mm 15mm 2mm; 
+          font-size: 13px; 
+          line-height: 1.4;
+          color: #000;
+          font-weight: 500;
+        }
         .center { text-align: center; }
-        .bold { font-weight: bold; }
-        .line { border-top: 1px dashed #000; margin: 6px 0; }
-        .grid { display: grid; grid-template-columns: 1fr 40px 70px; gap: 5px; align-items: start; }
+        .bold { font-weight: 800; }
+        .line { border-top: 2px solid #000; margin: 8px 0; }
+        .dashed-line { border-top: 1px dashed #000; margin: 8px 0; }
+        .grid { display: grid; grid-template-columns: 1fr 45px 75px; gap: 5px; align-items: start; }
+        .row { display: flex; justify-content: space-between; margin: 4px 0; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
-        h2 { margin: 5px 0; font-size: 15px; }
-        p { margin: 2px 0; white-space: pre-line; line-height: 1.2; }
+        h2 { margin: 5px 0; font-size: 18px; font-weight: 800; text-transform: uppercase; }
+        p { margin: 3px 0; white-space: pre-line; }
       </style>
       </head>
       <body>
         <div class="center">
           <h2 class="bold">${shopName}</h2>
-          <div style="font-size: 10px; margin-bottom: 5px; white-space: pre-line;">${address}</div>
-          <h2 class="bold" style="text-decoration: underline;">DAY CLOSING SUMMARY</h2>
-          <p>Date: ${new Date().toLocaleDateString()}</p>
+          <div style="font-size: 11px; margin-bottom: 5px; white-space: pre-line; font-weight: 700;">${address}</div>
+          <div class="line"></div>
+          <h2 class="bold" style="text-decoration: underline; font-size: 16px;">DAY CLOSING SUMMARY</h2>
+          <p class="bold">Date: ${new Date().toLocaleDateString()}</p>
+          <p class="bold">Time: ${new Date().toLocaleTimeString()}</p>
         </div>
         <div class="line"></div>
         <div class="grid bold"><span>Item</span><span class="text-center">Qty</span><span class="text-right">Amt</span></div>
@@ -202,20 +215,29 @@ export default function Dashboard() {
             <span class="text-right">₹${d.total.toFixed(2)}</span>
           </div>
         `).join('')}
+        <div class="dashed-line"></div>
+        <div class="row bold"><span>SALES REVENUE</span><span>₹${data.todayRevenue.toFixed(2)}</span></div>
+        <div class="row bold"><span>TOKEN REVENUE</span><span>₹${data.todayTokenRevenue.toFixed(2)}</span></div>
         <div class="line"></div>
-        <div class="row bold"><span>SALES TOTAL</span><span>₹${data.todayRevenue.toFixed(2)}</span></div>
-        <div class="row bold"><span>TOKEN TOTAL</span><span>₹${data.todayTokenRevenue.toFixed(2)}</span></div>
-        <div class="row bold" style="font-size: 14px; margin-top: 5px;">
+        <div class="row bold" style="font-size: 16px; margin-top: 5px;">
           <span>GRAND TOTAL</span><span>₹${(data.todayRevenue + data.todayTokenRevenue).toFixed(2)}</span>
         </div>
-        <div class="row"><span>Total Expenses</span><span>-₹${data.todayExpenseTotal.toFixed(2)}</span></div>
         <div class="line"></div>
-        <div class="center"><p>-- End of Summary --</p></div>
+        <div class="row"><span>Total Expenses</span><span>-₹${data.todayExpenseTotal.toFixed(2)}</span></div>
+        <div class="row bold" style="font-size: 15px; margin-top: 5px;">
+          <span>NET CASH</span><span>₹${(data.todayRevenue + data.todayTokenRevenue - data.todayExpenseTotal).toFixed(2)}</span>
+        </div>
+        <div class="line"></div>
+        <div class="center" style="margin-top: 20px;"><p class="bold">-- End of Summary --</p></div>
+        <div style="height: 30px;"></div>
       </body>
       </html>
     `);
     printWindow.document.close();
-    printWindow.print();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 500);
   };
 
   const handleWipeData = async () => {

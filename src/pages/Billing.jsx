@@ -163,7 +163,7 @@ export default function Billing() {
   };
 
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank', 'width=320,height=600');
+    const printWindow = window.open('', '_blank', 'width=380,height=800');
     const shopName = settings.shopName || 'Sri Silambu Karupatti Coffee';
     const address = settings.address || '';
     const gst = settings.gst || '';
@@ -173,17 +173,30 @@ export default function Billing() {
       <head><title>Receipt</title>
       <style>
         @page { margin: 0; }
-        body { font-family: 'Courier New', monospace; width: 260px; margin: 0 auto; padding: 10mm 5mm; font-size: 11px; }
+        body { 
+          font-family: 'Inter', -apple-system, sans-serif; 
+          width: 285px; 
+          margin: 0 auto; 
+          padding: 5mm 2mm 15mm 2mm; 
+          font-size: 13px; 
+          line-height: 1.4;
+          color: #000;
+          font-weight: 500;
+        }
         .center { text-align: center; }
-        .logo-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 5px; }
-        .logo-img { width: 35px; height: 35px; object-fit: contain; }
-        .bold { font-weight: bold; }
-        .line { border-top: 1px dashed #000; margin: 6px 0; }
-        .grid { display: grid; grid-template-columns: 1fr 40px 70px; gap: 5px; align-items: start; }
+        .logo-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px; }
+        .logo-img { width: 45px; height: 45px; object-fit: contain; }
+        .bold { font-weight: 800; }
+        .line { border-top: 2px solid #000; margin: 8px 0; }
+        .dashed-line { border-top: 1px dashed #000; margin: 8px 0; }
+        .grid { display: grid; grid-template-columns: 1fr 45px 75px; gap: 5px; align-items: start; }
+        .row { display: flex; justify-content: space-between; margin: 2px 0; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
-        h2 { margin: 0; font-size: 15px; }
-        p { margin: 2px 0; white-space: pre-line; line-height: 1.2; }
+        h2 { margin: 0; font-size: 18px; font-weight: 800; text-transform: uppercase; }
+        p { margin: 3px 0; white-space: pre-line; }
+        .total-section { font-size: 16px; margin-top: 5px; }
+        .footer { margin-top: 15px; font-size: 12px; }
       </style>
       </head>
       <body>
@@ -192,30 +205,36 @@ export default function Billing() {
             <img src="/silambu_logo.png" class="logo-img" />
             <h2>${shopName}</h2>
           </div>
-          <p>${address}</p>
+          <p class="bold">${address}</p>
           ${gst ? `<p>GST: ${gst}</p>` : ''}
         </div>
         <div class="line"></div>
-        <div class="row"><span>Date: ${new Date(showReceipt.date).toLocaleDateString()}</span><span>${new Date(showReceipt.date).toLocaleTimeString()}</span></div>
-        <p>Customer: ${showReceipt.customerName}</p>
+        <div class="row"><span class="bold">Date: ${new Date(showReceipt.date).toLocaleDateString()}</span><span class="bold">${new Date(showReceipt.date).toLocaleTimeString()}</span></div>
+        <div class="row"><span class="bold">Inv: #${showReceipt.id.slice(0, 8).toUpperCase()}</span></div>
+        <p>Customer: <span class="bold">${showReceipt.customerName}</span></p>
         <div class="line"></div>
         <div class="grid bold"><span>Item</span><span class="text-center">Qty</span><span class="text-right">Amt</span></div>
         <div class="line"></div>
         ${showReceipt.items.map(i => `<div class="grid"><span>${i.name}</span><span class="text-center">${i.qty}</span><span class="text-right">₹${((i.sellingPrice || 0) * i.qty).toFixed(2)}</span></div>`).join('')}
-        <div class="line"></div>
+        <div class="dashed-line"></div>
         <div class="row"><span>Subtotal</span><span>₹${showReceipt.subtotal.toFixed(2)}</span></div>
         ${showReceipt.discountAmt > 0 ? `<div class="row"><span>Discount (${showReceipt.discount}%)</span><span>-₹${showReceipt.discountAmt.toFixed(2)}</span></div>` : ''}
-        <div class="row bold"><span>TOTAL</span><span>₹${showReceipt.total.toFixed(2)}</span></div>
         <div class="line"></div>
-        <div class="center">
-          <p>Payment: ${showReceipt.paymentMode}</p>
-          <p>Thank you! Visit again!</p>
+        <div class="row bold total-section"><span>TOTAL</span><span>₹${showReceipt.total.toFixed(2)}</span></div>
+        <div class="line"></div>
+        <div class="center footer">
+          <p class="bold">Payment Mode: ${showReceipt.paymentMode}</p>
+          <p class="bold" style="font-size: 14px; margin-top: 10px;">Thank you! Visit again!</p>
         </div>
+        <div style="height: 20px;"></div>
       </body>
       </html>
     `);
     printWindow.document.close();
-    printWindow.print();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 500);
   };
 
   const todayTotal = todaySales.reduce((s, i) => s + (i.total || 0), 0);
