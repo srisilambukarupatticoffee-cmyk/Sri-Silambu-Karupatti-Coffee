@@ -27,6 +27,15 @@ export default function Billing() {
     loadData();
   }, []);
 
+  useEffect(() => {
+    if (showReceipt && settings.autoPrint) {
+      const timer = setTimeout(() => {
+        handlePrint();
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showReceipt, settings.autoPrint]);
+
   const loadData = async () => {
     setLoading(true);
     try {

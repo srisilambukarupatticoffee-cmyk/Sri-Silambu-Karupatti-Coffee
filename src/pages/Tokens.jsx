@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { db, TOKEN_CATEGORIES } from '../utils/db';
 import { v4 as uuid } from 'uuid';
-import { LuTicket, LuPlus, LuHash, LuPrinter } from 'react-icons/lu';
+import { LuTicket, LuPlus, LuHash, LuPrinter, LuX } from 'react-icons/lu';
 import './Pages.css';
 
 const TOKEN_EMOJIS = { Tea: '🍵', Coffee: '☕', Milk: '🥛', Meals: '🍛', Tiffen: '🫓', Juice: '🍹', 'Ice Cream': '🍦' };
@@ -23,6 +23,7 @@ export default function Tokens() {
   const [selectedCat, setSelectedCat] = useState(null);
   const [selectedType, setSelectedType] = useState('');
   const [qty, setQty] = useState(1);
+  const [isTokenFormOpen, setIsTokenFormOpen] = useState(false);
 
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -139,11 +140,17 @@ export default function Tokens() {
       });
 
       await loadData();
-      handlePrint(newTask);
+      
+      if (settings.autoPrint) {
+        setTimeout(() => {
+          handlePrint(newTask);
+        }, 2000);
+      }
       
       setQty(1);
       setSelectedCat(null);
       setSelectedType('');
+      setIsTokenFormOpen(false);
     } finally {
       setLoading(false);
     }
@@ -165,135 +172,173 @@ export default function Tokens() {
   const totalRevenueToday = todayTokens.reduce((s, t) => s + (t.total || 0), 0);
 
   return (
-    <div className="page">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">Token System</h1>
-          <p className="page-subtitle">Issue & track tokens for Tea, Coffee, Milk, Meals</p>
-        </div>
-      </div>
+    <div className={`token-page ${isTokenFormOpen ? 'token-open' : ''}`}>
+      {/* Mobile Token Overlay */}
+      {isTokenFormOpen && <div className="token-overlay mobile-only" onClick={() => setIsTokenFormOpen(false)} />}
 
-      {/* Summary Cards */}
-      <div className="kpi-grid">
-        <div className="kpi-card" style={{ '--kpi-color': '#6366f1' }}>
-          <div className="kpi-icon" style={{ background: '#6366f118', color: '#6366f1' }}>
-            <LuTicket />
-          </div>
-          <div className="kpi-body">
-            <span className="kpi-label">Today's Total Items</span>
-            <span className="kpi-value">{totalTokensQtyToday}</span>
-            <span className="kpi-sub">{todayTokens.length} tokens issued</span>
-          </div>
-        </div>
-        <div className="kpi-card" style={{ '--kpi-color': '#10b981' }}>
-          <div className="kpi-icon" style={{ background: '#10b98118', color: '#10b981' }}>
-            <LuHash />
-          </div>
-          <div className="kpi-body">
-            <span className="kpi-label">Today's Token Revenue</span>
-            <span className="kpi-value">₹{totalRevenueToday.toLocaleString()}</span>
-          </div>
-        </div>
-      </div>
+      {/* Floating Token Button (Mobile Only) */}
+      <button 
+        className={`mobile-token-fab mobile-only ${selectedCat ? 'has-selection' : ''}`}
+        onClick={() => setIsTokenFormOpen(!isTokenFormOpen)}
+      >
+        <LuTicket />
+        {selectedCat && <span className="fab-badge">1</span>}
+      </button>
 
-      {/* Token Issue Cards */}
-      <div className="token-grid">
-        {TOKEN_CATEGORIES.map(cat => (
-          <div
-            key={cat}
-            className={`token-card ${selectedCat === cat ? 'selected' : ''}`}
-            onClick={() => {
-              setSelectedCat(cat);
-              setSelectedType(TOKEN_TYPES[cat][0]);
-            }}
-          >
-            <span className="token-emoji">{TOKEN_EMOJIS[cat]}</span>
-            <span className="token-cat-name">{cat}</span>
-            <div className="token-stats">
-              <span>{categorySummary[cat]?.count || 0} items</span>
-              <span>₹{categorySummary[cat]?.revenue?.toLocaleString() || 0}</span>
+      <div className="tokens-main">
+        <div className="page-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <img src="/silambu_logo.png" alt="Logo" style={{ width: '48px', height: '48px', objectFit: 'contain', background: 'white', padding: '4px', borderRadius: '10px', boxShadow: 'var(--shadow-sm)' }} />
+            <div>
+              <h1 className="page-title">Token System</h1>
+              <p className="page-subtitle">Issue & track tokens for Tea, Coffee, Milk, Meals</p>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
 
-      {/* Issue Form */}
-      {selectedCat && (
-        <div className="token-issue-form animate-slide-up">
-          <div className="token-form-top">
-            <h3>Issue {TOKEN_EMOJIS[selectedCat]} {selectedCat} Token</h3>
-            <button className="btn-close" onClick={() => setSelectedCat(null)}>&times;</button>
-          </div>
-          
-          <div className="token-type-selector">
-            <label>Select Type:</label>
-            <div className="type-chips">
-              {TOKEN_TYPES[selectedCat].map(type => (
-                <button 
-                  key={type} 
-                  className={`type-chip ${selectedType === type ? 'active' : ''}`}
-                  onClick={() => setSelectedType(type)}
-                >
-                  {type}
-                </button>
-              ))}
+        {/* Summary Cards */}
+        <div className="kpi-grid">
+          <div className="kpi-card" style={{ '--kpi-color': '#6366f1' }}>
+            <div className="kpi-icon" style={{ background: '#6366f118', color: '#6366f1' }}>
+              <LuTicket />
+            </div>
+            <div className="kpi-body">
+              <span className="kpi-label">Today's Total Items</span>
+              <span className="kpi-value">{totalTokensQtyToday}</span>
+              <span className="kpi-sub">{todayTokens.length} tokens issued</span>
             </div>
           </div>
+          <div className="kpi-card" style={{ '--kpi-color': '#10b981' }}>
+            <div className="kpi-icon" style={{ background: '#10b98118', color: '#10b981' }}>
+              <LuHash />
+            </div>
+            <div className="kpi-body">
+              <span className="kpi-label">Today's Token Revenue</span>
+              <span className="kpi-value">₹{totalRevenueToday.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
 
-          <div className="token-issue-row">
-            <div className="qty-selector">
-              <label>Quantity:</label>
-              <div className="qty-control">
-                <button className="qty-btn" onClick={() => setQty(Math.max(1, qty - 1))}>−</button>
-                <span className="qty-display">{qty}</span>
-                <button className="qty-btn" onClick={() => setQty(qty + 1)}>+</button>
+        {/* Token Issue Cards */}
+        <div className="token-grid">
+          {TOKEN_CATEGORIES.map(cat => (
+            <div
+              key={cat}
+              className={`token-card ${selectedCat === cat ? 'selected' : ''}`}
+              onClick={() => {
+                setSelectedCat(cat);
+                setSelectedType(TOKEN_TYPES[cat][0]);
+                setIsTokenFormOpen(true);
+              }}
+            >
+              <span className="token-emoji">{TOKEN_EMOJIS[cat]}</span>
+              <span className="token-cat-name">{cat}</span>
+              <div className="token-stats">
+                <span>{categorySummary[cat]?.count || 0} items</span>
+                <span>₹{categorySummary[cat]?.revenue?.toLocaleString() || 0}</span>
               </div>
             </div>
-            
-            <button className="btn btn-primary btn-large" onClick={issueToken}>
-              <LuPlus /> Issue & Print Token
-            </button>
+          ))}
+        </div>
+
+        {/* Today's Token Log */}
+        <div className="section-card">
+          <h3 className="section-title">Today's Token Log</h3>
+          {todayTokens.length > 0 ? (
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Token #</th>
+                    <th>Item / Type</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                    <th>Time</th>
+                    <th>Print</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...todayTokens].reverse().map(t => (
+                    <tr key={t.id}>
+                      <td><span className="badge accent">#{t.tokenNumber}</span></td>
+                      <td><span className="td-bold">{t.type}</span> <small>({t.category})</small></td>
+                      <td>{t.qty}</td>
+                      <td>₹{t.total}</td>
+                      <td>{new Date(t.date).toLocaleTimeString()}</td>
+                      <td>
+                        <button className="icon-btn" onClick={() => handlePrint(t)}>
+                          <LuPrinter />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="empty-state">No tokens issued today</div>
+          )}
+        </div>
+      </div>
+
+      {/* Token Issue Panel (Like Cart) */}
+      <div className={`token-panel ${isTokenFormOpen ? 'mobile-show' : ''}`}>
+        <div className="token-panel-header">
+          <button className="btn-close-token mobile-only" onClick={() => setIsTokenFormOpen(false)}>
+            <LuX />
+          </button>
+          <div className="token-panel-title">
+            <LuTicket />
+            <h2>Token</h2>
           </div>
         </div>
-      )}
 
-      {/* Today's Token Log */}
-      <div className="section-card">
-        <h3 className="section-title">Today's Token Log</h3>
-        {todayTokens.length > 0 ? (
-          <div className="table-container">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Token #</th>
-                  <th>Item / Type</th>
-                  <th>Qty</th>
-                  <th>Total</th>
-                  <th>Time</th>
-                  <th>Print</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[...todayTokens].reverse().map(t => (
-                  <tr key={t.id}>
-                    <td><span className="badge accent">#{t.tokenNumber}</span></td>
-                    <td><span className="td-bold">{t.type}</span> <small>({t.category})</small></td>
-                    <td>{t.qty}</td>
-                    <td>₹{t.total}</td>
-                    <td>{new Date(t.date).toLocaleTimeString()}</td>
-                    <td>
-                      <button className="icon-btn" onClick={() => handlePrint(t)}>
-                        <LuPrinter />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="empty-state">No tokens issued today</div>
-        )}
+        <div className="token-panel-content">
+          {!selectedCat ? (
+            <div className="token-empty">
+              <LuTicket />
+              <p>No token selected</p>
+              <p className="token-empty-sub">Tap categories to issue</p>
+            </div>
+          ) : (
+            <div className="token-issue-form animate-slide-up">
+              <div className="token-form-top">
+                <h3>{TOKEN_EMOJIS[selectedCat]} {selectedCat}</h3>
+                <button className="btn-close desktop-only" onClick={() => setSelectedCat(null)}>&times;</button>
+              </div>
+              
+              <div className="token-type-selector">
+                <label>Select Type:</label>
+                <div className="type-chips">
+                  {TOKEN_TYPES[selectedCat].map(type => (
+                    <button 
+                      key={type} 
+                      className={`type-chip ${selectedType === type ? 'active' : ''}`}
+                      onClick={() => setSelectedType(type)}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="token-panel-footer">
+                <div className="qty-selector">
+                  <label>Quantity:</label>
+                  <div className="qty-control">
+                    <button className="qty-btn" onClick={() => setQty(Math.max(1, qty - 1))}>−</button>
+                    <span className="qty-display">{qty}</span>
+                    <button className="qty-btn" onClick={() => setQty(qty + 1)}>+</button>
+                  </div>
+                </div>
+                
+                <button className="btn btn-primary btn-large checkout-btn" onClick={issueToken}>
+                  <LuPlus /> Issue & Print
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

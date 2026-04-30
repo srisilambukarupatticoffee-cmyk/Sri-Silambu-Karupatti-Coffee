@@ -11,7 +11,7 @@ export default function Settings() {
     gst: '',
     fontSize: 'medium',
     alignment: 'center',
-    autoPrint: false,
+    autoPrint: true,
   });
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
