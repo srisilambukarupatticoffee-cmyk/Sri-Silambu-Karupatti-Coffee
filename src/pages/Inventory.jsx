@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { db, CATEGORIES, UNITS } from '../utils/db';
 import { useAuth } from '../contexts/AuthContext';
 import { LuPlus, LuSearch, LuPencil, LuTrash2, LuPackagePlus, LuPackageMinus, LuTriangleAlert } from 'react-icons/lu';
@@ -8,12 +9,13 @@ import './Pages.css';
 const emptyProduct = { name: '', category: 'Biscuits', unit: 'packets', costPrice: '', sellingPrice: '', stock: '' };
 
 export default function Inventory() {
+  const { t } = useTranslation();
   const { isAdmin } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('All');
-  const [modal, setModal] = useState(null); // 'add' | 'edit' | 'stock'
+  const [modal, setModal] = useState(null); 
   const [form, setForm] = useState(emptyProduct);
   const [editId, setEditId] = useState(null);
   const [stockAdj, setStockAdj] = useState({ id: '', name: '', qty: '', type: 'add' });
@@ -62,7 +64,7 @@ export default function Inventory() {
   };
 
   const handleDelete = async (id) => {
-    if (confirm('Delete this product?')) {
+    if (confirm(t('inventory.confirm_delete'))) {
       await db.remove('products', id);
       await loadProducts();
     }
@@ -83,41 +85,39 @@ export default function Inventory() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Inventory</h1>
-          <p className="page-subtitle">{products.length} products • {lowStockItems.length} low stock</p>
+          <h1 className="page-title">{t('inventory.title')}</h1>
+          <p className="page-subtitle">{t('inventory.stats', { total: products.length, low: lowStockItems.length })}</p>
         </div>
         {isAdmin() && (
           <button className="btn btn-primary" onClick={() => { setForm(emptyProduct); setEditId(null); setModal('add'); }}>
-            <LuPlus /> Add Product
+            <LuPlus /> {t('inventory.add_product')}
           </button>
         )}
       </div>
 
-      {/* Low stock alert */}
       {lowStockItems.length > 0 && (
         <div className="alert alert-warning">
           <LuTriangleAlert />
-          <span><strong>Low Stock Alert:</strong> {lowStockItems.map(p => p.name).join(', ')}</span>
+          <span><strong>{t('inventory.low_stock_alert')}</strong> {lowStockItems.map(p => p.name).join(', ')}</span>
         </div>
       )}
 
-      {/* Filters */}
       <div className="filters">
         <div className="search-box">
           <LuSearch className="search-icon" />
           <input
             type="text"
-            placeholder="Search products..."
+            placeholder={t('billing.search_placeholder')}
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
         <div className="cat-tabs">
-          {['All', ...CATEGORIES].map(cat => (
+          {[t('billing.all_categories'), ...CATEGORIES].map(cat => (
             <button
               key={cat}
-              className={`cat-tab ${catFilter === cat ? 'active' : ''}`}
-              onClick={() => setCatFilter(cat)}
+              className={`cat-tab ${catFilter === (cat === t('billing.all_categories') ? 'All' : cat) ? 'active' : ''}`}
+              onClick={() => setCatFilter(cat === t('billing.all_categories') ? 'All' : cat)}
             >
               {cat}
             </button>
@@ -125,18 +125,17 @@ export default function Inventory() {
         </div>
       </div>
 
-      {/* Products Table */}
       <div className="table-container">
         <table className="data-table">
           <thead>
             <tr>
-              <th>Product</th>
-              <th>Category</th>
-              <th>Unit</th>
-              <th>Cost ₹</th>
-              <th>Price ₹</th>
-              <th>Stock</th>
-              <th>Actions</th>
+              <th>{t('inventory.product_name')}</th>
+              <th>{t('inventory.category')}</th>
+              <th>{t('inventory.unit')}</th>
+              <th>{t('inventory.cost_price')} \u20B9</th>
+              <th>{t('inventory.selling_price')} \u20B9</th>
+              <th>{t('dashboard.tokens')}</th>
+              <th>{t('common.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -145,8 +144,8 @@ export default function Inventory() {
                 <td className="td-bold">{p.name}</td>
                 <td><span className="badge">{p.category}</span></td>
                 <td>{p.unit}</td>
-                <td>₹{p.costPrice}</td>
-                <td>₹{p.sellingPrice}</td>
+                <td>\u20B9{p.costPrice}</td>
+                <td>\u20B9{p.sellingPrice}</td>
                 <td>
                   <span className={`stock-badge ${p.stock <= 10 ? 'low' : p.stock <= 30 ? 'medium' : 'high'}`}>
                     {p.stock}
@@ -156,14 +155,14 @@ export default function Inventory() {
                   <div className="action-btns">
                     <button
                       className="icon-btn add"
-                      title="Add Stock"
+                      title={t('inventory.add_stock')}
                       onClick={() => { setStockAdj({ id: p.id, name: p.name, qty: '', type: 'add' }); setModal('stock'); }}
                     >
                       <LuPackagePlus />
                     </button>
                     <button
                       className="icon-btn remove"
-                      title="Remove Stock"
+                      title={t('inventory.remove_stock')}
                       onClick={() => { setStockAdj({ id: p.id, name: p.name, qty: '', type: 'remove' }); setModal('stock'); }}
                     >
                       <LuPackageMinus />
@@ -172,12 +171,12 @@ export default function Inventory() {
                       <>
                         <button
                           className="icon-btn edit"
-                          title="Edit"
+                          title={t('common.edit')}
                           onClick={() => { setForm(p); setEditId(p.id); setModal('edit'); }}
                         >
                           <LuPencil />
                         </button>
-                        <button className="icon-btn delete" title="Delete" onClick={() => handleDelete(p.id)}>
+                        <button className="icon-btn delete" title={t('common.delete')} onClick={() => handleDelete(p.id)}>
                           <LuTrash2 />
                         </button>
                       </>
@@ -187,31 +186,30 @@ export default function Inventory() {
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan="7" className="empty-row">No products found</td></tr>
+              <tr><td colSpan="7" className="empty-row">{t('billing.no_products')}</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Add/Edit Modal */}
       {(modal === 'add' || modal === 'edit') && (
         <div className="modal-overlay" onClick={() => setModal(null)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2 className="modal-title">{editId ? 'Edit Product' : 'Add Product'}</h2>
+            <h2 className="modal-title">{editId ? t('inventory.edit_product') : t('inventory.add_product')}</h2>
             <form onSubmit={handleSave} className="modal-form">
               <div className="form-group">
-                <label>Product Name</label>
+                <label>{t('inventory.product_name')}</label>
                 <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Category</label>
+                  <label>{t('inventory.category')}</label>
                   <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
                     {CATEGORIES.map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Unit</label>
+                  <label>{t('inventory.unit')}</label>
                   <select value={form.unit} onChange={e => setForm({ ...form, unit: e.target.value })}>
                     {UNITS.map(u => <option key={u}>{u}</option>)}
                   </select>
@@ -219,42 +217,41 @@ export default function Inventory() {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Cost Price (₹)</label>
+                  <label>{t('inventory.cost_price')} (\u20B9)</label>
                   <input type="number" value={form.costPrice} onChange={e => setForm({ ...form, costPrice: e.target.value })} required min="0" step="0.01" />
                 </div>
                 <div className="form-group">
-                  <label>Selling Price (₹)</label>
+                  <label>{t('inventory.selling_price')} (\u20B9)</label>
                   <input type="number" value={form.sellingPrice} onChange={e => setForm({ ...form, sellingPrice: e.target.value })} required min="0" step="0.01" />
                 </div>
               </div>
               <div className="form-group">
-                <label>Stock Quantity</label>
+                <label>{t('inventory.stock_qty')}</label>
                 <input type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} required min="0" />
               </div>
               <div className="modal-actions">
-                <button type="button" className="btn btn-ghost" onClick={() => setModal(null)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">{editId ? 'Update' : 'Add Product'}</button>
+                <button type="button" className="btn btn-ghost" onClick={() => setModal(null)}>{t('common.cancel')}</button>
+                <button type="submit" className="btn btn-primary">{editId ? t('inventory.update') : t('inventory.add_product')}</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Stock Modal */}
       {modal === 'stock' && (
         <div className="modal-overlay" onClick={() => setModal(null)}>
           <div className="modal modal-sm" onClick={e => e.stopPropagation()}>
-            <h2 className="modal-title">{stockAdj.type === 'add' ? 'Add' : 'Remove'} Stock</h2>
+            <h2 className="modal-title">{stockAdj.type === 'add' ? t('inventory.add_stock') : t('inventory.remove_stock')}</h2>
             <p className="modal-subtitle">{stockAdj.name}</p>
             <form onSubmit={handleStockUpdate} className="modal-form">
               <div className="form-group">
-                <label>Quantity</label>
+                <label>{t('inventory.stock_qty')}</label>
                 <input type="number" value={stockAdj.qty} onChange={e => setStockAdj({ ...stockAdj, qty: e.target.value })} required min="1" autoFocus />
               </div>
               <div className="modal-actions">
-                <button type="button" className="btn btn-ghost" onClick={() => setModal(null)}>Cancel</button>
+                <button type="button" className="btn btn-ghost" onClick={() => setModal(null)}>{t('common.cancel')}</button>
                 <button type="submit" className={`btn ${stockAdj.type === 'add' ? 'btn-success' : 'btn-danger'}`}>
-                  {stockAdj.type === 'add' ? 'Add Stock' : 'Remove Stock'}
+                  {stockAdj.type === 'add' ? t('inventory.add_stock') : t('inventory.remove_stock')}
                 </button>
               </div>
             </form>

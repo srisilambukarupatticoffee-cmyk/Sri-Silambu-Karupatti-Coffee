@@ -9,6 +9,7 @@ import Inventory from './pages/Inventory';
 import Tokens from './pages/Tokens';
 import Expenses from './pages/Expenses';
 import Customers from './pages/Customers';
+import Sales from './pages/Sales';
 import Settings from './pages/Settings';
 import './index.css';
 
@@ -29,6 +30,7 @@ function AppRoutes() {
       <Route path="/tokens" element={<ProtectedRoute><Tokens /></ProtectedRoute>} />
       <Route path="/expenses" element={<ProtectedRoute><Expenses /></ProtectedRoute>} />
       <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
+      <Route path="/sales" element={<ProtectedRoute><Sales /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

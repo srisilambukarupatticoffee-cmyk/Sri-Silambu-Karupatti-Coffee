@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { db } from '../utils/db';
-import { LuSave, LuPrinter, LuSettings2, LuDatabase } from 'react-icons/lu';
+import { LuSave, LuPrinter, LuSettings2, LuDatabase, LuLanguages } from 'react-icons/lu';
 import { SEED_PRODUCTS } from '../data/inventory_seeds';
 import './Pages.css';
 
 export default function Settings() {
+  const { t, i18n } = useTranslation();
   const [settings, setSettings] = useState({
     shopName: 'Sri Silambu Karupatti Coffee',
     address: 'No: 15, Puthupalayam, Bengaluru Main Road, Chengam, Tiruvannamalai - 606709\n📞 97866 98585, +91 99941 15599',
@@ -12,6 +14,7 @@ export default function Settings() {
     fontSize: 'medium',
     alignment: 'center',
     autoPrint: true,
+    language: i18n.language || 'en'
   });
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState(false);
@@ -27,6 +30,9 @@ export default function Settings() {
       const data = await db.getAll('settings');
       if (data && data.length > 0) {
         setSettings(data[0]);
+        if (data[0].language) {
+          i18n.changeLanguage(data[0].language);
+        }
       }
     } finally {
       setLoading(false);
@@ -42,6 +48,12 @@ export default function Settings() {
       } else {
         await db.add('settings', { ...settings, id: 'main-settings' });
       }
+      
+      // Update app language immediately
+      if (settings.language) {
+        i18n.changeLanguage(settings.language);
+      }
+
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } finally {
@@ -50,21 +62,21 @@ export default function Settings() {
   };
 
   const handleMigrate = async () => {
-    if (!confirm('This will copy all your local products and data to MongoDB. Continue?')) return;
+    if (!confirm(t('common.confirm_migrate') || 'This will copy all your local products and data to MongoDB. Continue?')) return;
     setMigrating(true);
     try {
       await db.migrateFromLocalStorage();
-      alert('Migration successful! Your data is now in the cloud.');
+      alert(t('common.migrate_success') || 'Migration successful! Your data is now in the cloud.');
       window.location.reload();
     } catch (err) {
-      alert('Migration failed: ' + err.message);
+      alert(t('common.migrate_failed') || 'Migration failed: ' + err.message);
     } finally {
       setMigrating(false);
     }
   };
 
   const handleSeedProducts = async () => {
-    if (!confirm(`This will add ${SEED_PRODUCTS.length} products to your inventory. Existing products with the same names may be duplicated. Continue?`)) return;
+    if (!confirm(t('common.confirm_seed', { count: SEED_PRODUCTS.length }) || `This will add ${SEED_PRODUCTS.length} products to your inventory. Existing products with the same names may be duplicated. Continue?`)) return;
     setMigrating(true);
     try {
       for (const product of SEED_PRODUCTS) {
@@ -74,69 +86,90 @@ export default function Settings() {
           createdAt: new Date().toISOString()
         });
       }
-      alert('Product list seeded successfully!');
+      alert(t('common.seed_success') || 'Product list seeded successfully!');
       window.location.reload();
     } catch (err) {
-      alert('Seeding failed: ' + err.message);
+      alert(t('common.seed_failed') || 'Seeding failed: ' + err.message);
     } finally {
       setMigrating(false);
     }
   };
 
-  const update = (key, value) => setSettings(prev => ({ ...prev, [key]: value }));
+  const update = (key, value) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleLanguageChange = (lang) => {
+    update('language', lang);
+    i18n.changeLanguage(lang);
+  };
 
   return (
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Settings</h1>
-          <p className="page-subtitle">Configure receipt & printer settings</p>
+          <h1 className="page-title">{t('settings.title')}</h1>
+          <p className="page-subtitle">{t('settings.subtitle')}</p>
         </div>
         <button className={`btn ${saved ? 'btn-success' : 'btn-primary'}`} onClick={handleSave}>
-          <LuSave /> {saved ? 'Saved!' : 'Save Settings'}
+          <LuSave /> {saved ? t('common.saved') : t('common.save')}
         </button>
       </div>
 
       <div className="settings-grid">
+        {/* Language & General */}
+        <div className="section-card">
+          <h3 className="section-title"><LuLanguages /> {t('settings.language')}</h3>
+          <div className="settings-form">
+            <div className="form-group">
+              <label>{t('settings.select_language')}</label>
+              <select value={settings.language} onChange={e => handleLanguageChange(e.target.value)}>
+                <option value="en">{t('settings.english')}</option>
+                <option value="ta">{t('settings.tamil')}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
         {/* Cloud Migration */}
         <div className="section-card">
-          <h3 className="section-title">☁️ Cloud Migration</h3>
+          <h3 className="section-title">☁️ {t('settings.cloud_migration')}</h3>
           <div className="settings-form">
-            <p className="setting-help">Transfer local products/sales to MongoDB.</p>
+            <p className="setting-help">{t('settings.push_local_data_help') || 'Transfer local products/sales to MongoDB.'}</p>
             <button 
               className="btn btn-outline" 
               onClick={handleMigrate}
               disabled={migrating}
               style={{ width: '100%', marginTop: '5px' }}
             >
-              Push Local Data to Cloud
+              {t('settings.push_local_data')}
             </button>
-            <p className="setting-help" style={{ marginTop: '15px' }}>Initialize database with standard product list.</p>
+            <p className="setting-help" style={{ marginTop: '15px' }}>{t('settings.seed_products_help') || 'Initialize database with standard product list.'}</p>
             <button 
               className="btn btn-primary" 
               onClick={handleSeedProducts}
               disabled={migrating}
               style={{ width: '100%', marginTop: '5px' }}
             >
-              <LuDatabase /> Seed Product List
+              <LuDatabase /> {t('settings.seed_products')}
             </button>
           </div>
         </div>
 
         {/* Receipt Header */}
         <div className="section-card">
-          <h3 className="section-title"><LuPrinter /> Receipt Header</h3>
+          <h3 className="section-title"><LuPrinter /> {t('settings.receipt_header')}</h3>
           <div className="settings-form">
             <div className="form-group">
-              <label>Shop Name</label>
+              <label>{t('settings.shop_name')}</label>
               <input value={settings.shopName} onChange={e => update('shopName', e.target.value)} />
             </div>
             <div className="form-group">
-              <label>Address</label>
+              <label>{t('settings.address')}</label>
               <textarea value={settings.address} onChange={e => update('address', e.target.value)} rows="2" />
             </div>
             <div className="form-group">
-              <label>GST Number (optional)</label>
+              <label>{t('settings.gst_number')}</label>
               <input value={settings.gst} onChange={e => update('gst', e.target.value)} placeholder="Enter GST number" />
             </div>
           </div>
@@ -144,10 +177,10 @@ export default function Settings() {
 
         {/* Receipt Customization */}
         <div className="section-card">
-          <h3 className="section-title"><LuSettings2 /> Receipt Customization</h3>
+          <h3 className="section-title"><LuSettings2 /> {t('settings.receipt_customization')}</h3>
           <div className="settings-form">
             <div className="form-group">
-              <label>Font Size</label>
+              <label>{t('settings.font_size')}</label>
               <select value={settings.fontSize} onChange={e => update('fontSize', e.target.value)}>
                 <option value="small">Small</option>
                 <option value="medium">Medium</option>
@@ -155,7 +188,7 @@ export default function Settings() {
               </select>
             </div>
             <div className="form-group">
-              <label>Alignment</label>
+              <label>{t('settings.alignment')}</label>
               <select value={settings.alignment} onChange={e => update('alignment', e.target.value)}>
                 <option value="left">Left</option>
                 <option value="center">Center</option>
@@ -164,7 +197,7 @@ export default function Settings() {
             </div>
             <div className="form-group">
               <label className="toggle-label">
-                <span>Auto Print After Billing</span>
+                <span>{t('settings.auto_print')}</span>
                 <label className="toggle">
                   <input type="checkbox" checked={settings.autoPrint} onChange={e => update('autoPrint', e.target.checked)} />
                   <span className="toggle-slider" />
@@ -176,7 +209,7 @@ export default function Settings() {
 
         {/* Receipt Preview */}
         <div className="section-card span-2">
-          <h3 className="section-title">📄 Receipt Preview</h3>
+          <h3 className="section-title">📄 {t('settings.receipt_preview')}</h3>
           <div className="receipt-preview" style={{ fontSize: settings.fontSize === 'small' ? '11px' : settings.fontSize === 'large' ? '15px' : '13px', textAlign: settings.alignment }}>
             <div className="receipt-preview-inner">
               <div className="receipt-preview-logo">
@@ -187,17 +220,17 @@ export default function Settings() {
               {settings.gst && <p>GST: {settings.gst}</p>}
               <div className="receipt-sep">- - - - - - - - - - - - - - - -</div>
               <div style={{ textAlign: 'left' }}>
-                <div className="receipt-line"><span>Date: {new Date().toLocaleDateString()}</span><span>{new Date().toLocaleTimeString()}</span></div>
+                <div className="receipt-line"><span>{t('common.date')}: {new Date().toLocaleDateString()}</span><span>{new Date().toLocaleTimeString()}</span></div>
                 <div className="receipt-line"><span>Customer: Walk-in</span></div>
               </div>
               <div className="receipt-sep">- - - - - - - - - - - - - - - -</div>
               <div style={{ textAlign: 'left' }}>
-                <div className="receipt-line"><span>Masala Tea ×2</span><span>₹30.00</span></div>
-                <div className="receipt-line"><span>Filter Coffee ×1</span><span>₹20.00</span></div>
+                <div className="receipt-line"><span>Masala Tea ×2</span><span>\u20B930.00</span></div>
+                <div className="receipt-line"><span>Filter Coffee ×1</span><span>\u20B920.00</span></div>
               </div>
               <div className="receipt-sep">- - - - - - - - - - - - - - - -</div>
               <div style={{ textAlign: 'left' }}>
-                <div className="receipt-line"><strong>TOTAL</strong><strong>₹50.00</strong></div>
+                <div className="receipt-line"><strong>{t('common.total')}</strong><strong>\u20B950.00</strong></div>
               </div>
               <div className="receipt-sep">- - - - - - - - - - - - - - - -</div>
               <p>Payment: Cash</p>
@@ -210,7 +243,7 @@ export default function Settings() {
         <div className="modal-overlay" style={{ zIndex: 9999 }}>
           <div className="spinner-large" />
           <p style={{ color: 'white', marginTop: '20px' }}>
-            {migrating ? 'Migrating your data to MongoDB...' : 'Loading settings...'}
+            {migrating ? 'Migrating your data to MongoDB...' : t('common.loading')}
           </p>
         </div>
       )}

@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { db, CATEGORIES, PAYMENT_MODES } from '../utils/db';
 import { v4 as uuid } from 'uuid';
 import {
@@ -8,6 +9,7 @@ import {
 import './Billing.css';
 
 export default function Billing() {
+  const { t } = useTranslation();
   const [products, setProducts] = useState([]);
   const [settings, setSettings] = useState({});
   const [todaySales, setTodaySales] = useState([]);
@@ -19,7 +21,7 @@ export default function Billing() {
   const [paymentMode, setPaymentMode] = useState('Cash');
   const [showReceipt, setShowReceipt] = useState(null);
   const [customerName, setCustomerName] = useState('');
-  const [weightModal, setWeightModal] = useState(null); // { product, weight, unitType: 'g'|'kg' }
+  const [weightModal, setWeightModal] = useState(null); 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const receiptRef = useRef(null);
 
@@ -121,12 +123,11 @@ export default function Billing() {
         total,
         totalCost,
         paymentMode,
-        customerName: customerName || 'Walk-in',
+        customerName: customerName || t('billing.walk_in'),
       };
 
       await db.add('sales', sale);
 
-      // Update stock async
       for (const c of cart) {
         const product = products.find(p => p.id === c.id);
         if (product) {
@@ -134,7 +135,6 @@ export default function Billing() {
         }
       }
 
-      // Save customer if named
       if (customerName) {
         const customers = await db.getAll('customers');
         const existing = customers.find(c => c.name?.toLowerCase() === customerName.toLowerCase());
@@ -156,7 +156,7 @@ export default function Billing() {
       }
 
       setShowReceipt(sale);
-      await loadData(); // Reload for stats
+      await loadData(); 
     } finally {
       setLoading(false);
     }
@@ -170,7 +170,7 @@ export default function Billing() {
 
     printWindow.document.write(`
       <html>
-      <head><title>Receipt</title>
+      <head><title>${t('billing.invoice')}</title>
       <style>
         @page { margin: 0; }
         body { 
@@ -209,18 +209,18 @@ export default function Billing() {
           ${gst ? `<p>GST: ${gst}</p>` : ''}
         </div>
         <div class="line"></div>
-        <div class="row"><span class="bold">Date: ${new Date(showReceipt.date).toLocaleDateString()}</span><span class="bold">${new Date(showReceipt.date).toLocaleTimeString()}</span></div>
-        <div class="row"><span class="bold">Inv: #${showReceipt.id.slice(0, 8).toUpperCase()}</span></div>
-        <p>Customer: <span class="bold">${showReceipt.customerName}</span></p>
+        <div class="row"><span class="bold">${t('common.date')}: ${new Date(showReceipt.date).toLocaleDateString()}</span><span class="bold">${new Date(showReceipt.date).toLocaleTimeString()}</span></div>
+        <div class="row"><span class="bold">${t('billing.invoice')}: #${showReceipt.id.slice(0, 8).toUpperCase()}</span></div>
+        <p>${t('common.customers')}: <span class="bold">${showReceipt.customerName}</span></p>
         <div class="line"></div>
         <div class="grid bold"><span>Item</span><span class="text-center">Qty</span><span class="text-right">Amt</span></div>
         <div class="line"></div>
-        ${showReceipt.items.map(i => `<div class="grid"><span>${i.name}</span><span class="text-center">${i.qty}</span><span class="text-right">₹${((i.sellingPrice || 0) * i.qty).toFixed(2)}</span></div>`).join('')}
+        ${showReceipt.items.map(i => `<div class="grid"><span>${i.name}</span><span class="text-center">${i.qty}</span><span class="text-right">\u20B9${((i.sellingPrice || 0) * i.qty).toFixed(2)}</span></div>`).join('')}
         <div class="dashed-line"></div>
-        <div class="row"><span>Subtotal</span><span>₹${showReceipt.subtotal.toFixed(2)}</span></div>
-        ${showReceipt.discountAmt > 0 ? `<div class="row"><span>Discount (${showReceipt.discount}%)</span><span>-₹${showReceipt.discountAmt.toFixed(2)}</span></div>` : ''}
+        <div class="row"><span>${t('billing.subtotal')}</span><span>\u20B9${showReceipt.subtotal.toFixed(2)}</span></div>
+        ${showReceipt.discountAmt > 0 ? `<div class="row"><span>${t('billing.discount')} (${showReceipt.discount}%)</span><span>-\u20B9${showReceipt.discountAmt.toFixed(2)}</span></div>` : ''}
         <div class="line"></div>
-        <div class="row bold total-section"><span>TOTAL</span><span>₹${showReceipt.total.toFixed(2)}</span></div>
+        <div class="row bold total-section"><span>${t('billing.total')}</span><span>\u20B9${showReceipt.total.toFixed(2)}</span></div>
         <div class="line"></div>
         <div class="center footer">
           <p class="bold">Payment Mode: ${showReceipt.paymentMode}</p>
@@ -247,55 +247,55 @@ export default function Billing() {
             <div className="receipt-header">
               <img src="/silambu_logo.png" alt="Logo" style={{ width: '60px', height: '60px', objectFit: 'contain', marginBottom: '10px' }} />
               <div className="receipt-icon">✅</div>
-              <h2>Payment Successful!</h2>
-              <p className="receipt-total">₹{showReceipt.total.toFixed(2)}</p>
+              <h2>{t('billing.payment_successful')}</h2>
+              <p className="receipt-total">\u20B9{showReceipt.total.toFixed(2)}</p>
             </div>
             <div className="receipt-details">
               <div className="receipt-row">
-                <span>Invoice</span>
+                <span>{t('billing.invoice')}</span>
                 <span>#{showReceipt.id.slice(0, 8).toUpperCase()}</span>
               </div>
               <div className="receipt-row">
-                <span>Date</span>
+                <span>{t('common.date')}</span>
                 <span>{new Date(showReceipt.date).toLocaleDateString()}</span>
               </div>
               <div className="receipt-row">
-                <span>Customer</span>
+                <span>{t('common.customers')}</span>
                 <span>{showReceipt.customerName}</span>
               </div>
               <div className="receipt-row">
-                <span>Payment</span>
+                <span>{t('settings.alignment')}</span>
                 <span>{showReceipt.paymentMode}</span>
               </div>
               <div className="receipt-divider" />
               {showReceipt.items.map((item, i) => (
                 <div key={i} className="receipt-row">
                   <span>{item.name} × {item.qty}</span>
-                  <span>₹{(item.sellingPrice * item.qty).toFixed(2)}</span>
+                  <span>\u20B9{(item.sellingPrice * item.qty).toFixed(2)}</span>
                 </div>
               ))}
               <div className="receipt-divider" />
               <div className="receipt-row">
-                <span>Subtotal</span>
-                <span>₹{showReceipt.subtotal.toFixed(2)}</span>
+                <span>{t('billing.subtotal')}</span>
+                <span>\u20B9{showReceipt.subtotal.toFixed(2)}</span>
               </div>
               {showReceipt.discountAmt > 0 && (
                 <div className="receipt-row discount">
-                  <span>Discount ({showReceipt.discount}%)</span>
-                  <span>-₹{showReceipt.discountAmt.toFixed(2)}</span>
+                  <span>{t('billing.discount')} ({showReceipt.discount}%)</span>
+                  <span>-\u20B9{showReceipt.discountAmt.toFixed(2)}</span>
                 </div>
               )}
               <div className="receipt-row total">
-                <span>Total</span>
-                <span>₹{showReceipt.total.toFixed(2)}</span>
+                <span>{t('billing.total')}</span>
+                <span>\u20B9{showReceipt.total.toFixed(2)}</span>
               </div>
             </div>
             <div className="receipt-actions">
               <button className="btn btn-outline" onClick={handlePrint}>
-                <LuPrinter /> Print Receipt
+                <LuPrinter /> {t('billing.print_receipt')}
               </button>
               <button className="btn btn-primary" onClick={() => { setShowReceipt(null); clearCart(); }}>
-                <LuCheck /> New Sale
+                <LuCheck /> {t('billing.new_sale')}
               </button>
             </div>
           </div>
@@ -306,10 +306,8 @@ export default function Billing() {
 
   return (
     <div className={`billing-page ${isCartOpen ? 'cart-open' : ''}`}>
-      {/* Mobile Cart Overlay */}
       {isCartOpen && <div className="cart-overlay mobile-only" onClick={() => setIsCartOpen(false)} />}
 
-      {/* Floating Cart Button (Mobile Only) */}
       <button 
         className={`mobile-cart-fab mobile-only ${cart.length > 0 ? 'has-items' : ''}`}
         onClick={() => setIsCartOpen(!isCartOpen)}
@@ -323,7 +321,7 @@ export default function Billing() {
             <LuSearch className="search-icon" />
             <input
               type="text"
-              placeholder="Search products..."
+              placeholder={t('billing.search_placeholder')}
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -331,11 +329,11 @@ export default function Billing() {
         </div>
         <div className="cat-tabs-scroll">
           <div className="cat-tabs">
-            {['All', ...CATEGORIES].map(cat => (
+            {[t('billing.all_categories'), ...CATEGORIES].map(cat => (
               <button
                 key={cat}
-                className={`cat-tab ${catFilter === cat ? 'active' : ''}`}
-                onClick={() => setCatFilter(cat)}
+                className={`cat-tab ${catFilter === (cat === t('billing.all_categories') ? 'All' : cat) ? 'active' : ''}`}
+                onClick={() => setCatFilter(cat === t('billing.all_categories') ? 'All' : cat)}
               >
                 {cat}
               </button>
@@ -347,7 +345,6 @@ export default function Billing() {
             const getIcon = (item) => {
               const name = item.name.toLowerCase();
               const cat = item.category.toLowerCase();
-              
               if (name.includes('idli')) return '🍙';
               if (name.includes('dosa')) return '🫓';
               if (name.includes('poori')) return '🥟';
@@ -357,7 +354,6 @@ export default function Billing() {
               if (name.includes('chapathi')) return '🫓';
               if (name.includes('biryani')) return '🍗';
               if (name.includes('meals')) return '🍛';
-              
               if (name.includes('orange')) return '🍊';
               if (name.includes('apple')) return '🍎';
               if (name.includes('pomegranate')) return '🏮';
@@ -367,17 +363,13 @@ export default function Billing() {
               if (name.includes('lemon')) return '🍋';
               if (name.includes('soda')) return '🥤';
               if (name.includes('juice')) return '🍹';
-              
               if (name.includes('ice cream')) return '🍦';
-              
               if (name.includes('tea')) return '🍵';
               if (name.includes('coffee')) return '☕';
               if (name.includes('milk')) return '🥛';
-              
               if (cat === 'biscuits') return '🍪';
               if (cat === 'snacks') return '🍿';
               if (cat === 'beverages') return '🥤';
-              
               return '🍱';
             };
 
@@ -385,22 +377,20 @@ export default function Billing() {
               <button key={p.id} className="product-card" onClick={() => addToCart(p)} disabled={p.stock <= 0}>
                 <div className="product-emoji">{getIcon(p)}</div>
                 <span className="product-name">{p.name}</span>
-                <span className="product-price">₹{p.sellingPrice}</span>
-                {p.stock <= 10 && <span className="product-stock-low">{p.stock} left</span>}
+                <span className="product-price">\u20B9{p.sellingPrice}</span>
+                {p.stock <= 10 && <span className="product-stock-low">{p.stock} {t('billing.left')}</span>}
               </button>
             );
           })}
-          {filtered.length === 0 && <div className="empty-grid">No products found</div>}
+          {filtered.length === 0 && <div className="empty-grid">{t('billing.no_products')}</div>}
         </div>
 
-        {/* Daily Summary Bar */}
         <div className="daily-summary-bar">
-          <span>📊 Today: <strong>{todaySales.length}</strong> sales</span>
-          <span>💰 Revenue: <strong>₹{todayTotal.toLocaleString()}</strong></span>
+          <span>📊 {t('billing.today_stats', { count: todaySales.length })}</span>
+          <span>💰 {t('billing.revenue_stats', { total: todayTotal.toLocaleString() })}</span>
         </div>
       </div>
 
-      {/* Cart Panel */}
       <div className={`cart-panel ${isCartOpen ? 'mobile-show' : ''}`}>
         <div className="cart-header">
           <button className="btn-close-cart mobile-only" onClick={() => setIsCartOpen(false)}>
@@ -408,12 +398,12 @@ export default function Billing() {
           </button>
           <div className="cart-title-row">
             <LuShoppingCart />
-            <h2>Cart</h2>
+            <h2>{t('billing.cart')}</h2>
             <span className="cart-count">{cart.length}</span>
           </div>
           {cart.length > 0 && (
             <button className="btn btn-ghost btn-sm" onClick={clearCart}>
-              <LuX /> Clear
+              <LuX /> {t('billing.clear')}
             </button>
           )}
         </div>
@@ -422,15 +412,15 @@ export default function Billing() {
           {cart.length === 0 ? (
             <div className="cart-empty">
               <LuShoppingCart />
-              <p>Cart is empty</p>
-              <p className="cart-empty-sub">Tap products to add</p>
+              <p>{t('billing.cart_empty')}</p>
+              <p className="cart-empty-sub">{t('billing.tap_to_add')}</p>
             </div>
           ) : (
             cart.map(c => (
               <div key={c.id} className="cart-item">
                 <div className="cart-item-info">
                   <span className="cart-item-name">{c.name}</span>
-                  <span className="cart-item-price">₹{c.sellingPrice} per {c.unit}</span>
+                  <span className="cart-item-price">\u20B9{c.sellingPrice} {t('billing.per')} {c.unit}</span>
                 </div>
                 <div className="cart-item-controls">
                   <button className="qty-btn" onClick={() => updateQty(c.id, c.unit === 'kg' ? -0.1 : -1)}><LuMinus /></button>
@@ -452,7 +442,7 @@ export default function Billing() {
                   <button className="qty-btn" onClick={() => updateQty(c.id, c.unit === 'kg' ? 0.1 : 1)}><LuPlus /></button>
                   <button className="qty-btn delete" onClick={() => removeItem(c.id)}><LuTrash2 /></button>
                 </div>
-                <span className="cart-item-total">₹{(c.sellingPrice * c.qty).toFixed(2)}</span>
+                <span className="cart-item-total">\u20B9{(c.sellingPrice * c.qty).toFixed(2)}</span>
               </div>
             ))
           )}
@@ -460,18 +450,16 @@ export default function Billing() {
 
         {cart.length > 0 && (
           <div className="cart-footer">
-            {/* Customer Name */}
             <div className="form-group compact">
               <input
-                placeholder="Customer name (optional)"
+                placeholder={t('billing.customer_name_placeholder')}
                 value={customerName}
                 onChange={e => setCustomerName(e.target.value)}
               />
             </div>
 
-            {/* Discount */}
             <div className="discount-row">
-              <label>Discount %</label>
+              <label>{t('billing.discount')}</label>
               <input
                 type="number"
                 min="0"
@@ -481,7 +469,6 @@ export default function Billing() {
               />
             </div>
 
-            {/* Payment Mode */}
             <div className="payment-modes">
               {PAYMENT_MODES.map(mode => (
                 <button
@@ -495,46 +482,44 @@ export default function Billing() {
               ))}
             </div>
 
-            {/* Totals */}
             <div className="cart-totals">
               <div className="total-row">
-                <span>Subtotal</span>
-                <span>₹{subtotal.toFixed(2)}</span>
+                <span>{t('billing.subtotal')}</span>
+                <span>\u20B9{subtotal.toFixed(2)}</span>
               </div>
               {discountAmt > 0 && (
                 <div className="total-row discount">
-                  <span>Discount ({discount}%)</span>
-                  <span>-₹{discountAmt.toFixed(2)}</span>
+                  <span>{t('billing.discount')} ({discount}%)</span>
+                  <span>-\u20B9{discountAmt.toFixed(2)}</span>
                 </div>
               )}
               <div className="total-row grand">
-                <span>Total</span>
-                <span>₹{total.toFixed(2)}</span>
+                <span>{t('billing.total')}</span>
+                <span>\u20B9{total.toFixed(2)}</span>
               </div>
             </div>
 
             <button className="checkout-btn" onClick={() => { handleCheckout(); setIsCartOpen(false); }}>
-              <LuCheck /> Checkout — ₹{total.toFixed(2)}
+              <LuCheck /> {t('billing.checkout')} — \u20B9{total.toFixed(2)}
             </button>
           </div>
         )}
       </div>
 
-      {/* Weight Prompt Modal */}
       {weightModal && (
         <div className="modal-overlay">
           <div className="modal modal-sm animate-slide-up">
-            <h3 className="modal-title">Enter Weight</h3>
-            <p className="modal-subtitle">{weightModal.product.name} (₹{weightModal.product.sellingPrice}/kg)</p>
+            <h3 className="modal-title">{t('billing.enter_weight')}</h3>
+            <p className="modal-subtitle">{weightModal.product.name} (\u20B9{weightModal.product.sellingPrice}/kg)</p>
             
             <div className="modal-form">
               <div className="form-group">
-                <label>Weight in {weightModal.unitType === 'g' ? 'Grams (g)' : 'Kilograms (kg)'}</label>
+                <label>{t('billing.weight_in', { unit: weightModal.unitType === 'g' ? 'Grams (g)' : 'Kilograms (kg)' })}</label>
                 <div className="weight-input-wrapper">
                   <input
                     type="number"
                     autoFocus
-                    placeholder={`Enter weight in ${weightModal.unitType}`}
+                    placeholder={`${t('billing.enter_weight')} (${weightModal.unitType})`}
                     value={weightModal.weight}
                     onChange={e => setWeightModal({ ...weightModal, weight: e.target.value })}
                     onKeyDown={e => e.key === 'Enter' && confirmWeight()}
@@ -553,9 +538,9 @@ export default function Billing() {
               </div>
               
               <div className="modal-actions">
-                <button className="btn btn-ghost" onClick={() => setWeightModal(null)}>Cancel</button>
+                <button className="btn btn-ghost" onClick={() => setWeightModal(null)}>{t('common.cancel')}</button>
                 <button className="btn btn-primary" onClick={confirmWeight} disabled={!weightModal.weight}>
-                  Add to Cart
+                  {t('billing.add_to_cart')}
                 </button>
               </div>
             </div>

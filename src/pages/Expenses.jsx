@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { db, EXPENSE_CATEGORIES } from '../utils/db';
 import { v4 as uuid } from 'uuid';
 import { LuPlus, LuPencil, LuTrash2, LuCalendar, LuFilter } from 'react-icons/lu';
@@ -8,6 +9,7 @@ import './Pages.css';
 const emptyExpense = { name: '', amount: '', category: 'Purchase', date: new Date().toISOString().split('T')[0] };
 
 export default function Expenses() {
+  const { t } = useTranslation();
   const { isAdmin } = useAuth();
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,7 +58,7 @@ export default function Expenses() {
   };
 
   const handleDelete = async (id) => {
-    if (confirm('Delete this expense?')) {
+    if (confirm(t('expenses.confirm_delete'))) {
       setLoading(true);
       await db.remove('expenses', id);
       await loadExpenses();
@@ -67,22 +69,21 @@ export default function Expenses() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Expenses</h1>
-          <p className="page-subtitle">Today: ₹{todayTotal.toLocaleString()} • This Month: ₹{monthTotal.toLocaleString()}</p>
+          <h1 className="page-title">{t('expenses.title')}</h1>
+          <p className="page-subtitle">{t('expenses.stats', { today: todayTotal.toLocaleString(), month: monthTotal.toLocaleString() })}</p>
         </div>
         <button className="btn btn-primary" onClick={() => { setForm(emptyExpense); setEditId(null); setModal(true); }}>
-          <LuPlus /> Add Expense
+          <LuPlus /> {t('expenses.add_expense')}
         </button>
       </div>
 
-      {/* Filters */}
       <div className="filters">
         <div className="cat-tabs">
-          {['All', ...EXPENSE_CATEGORIES].map(cat => (
+          {[t('billing.all_categories'), ...EXPENSE_CATEGORIES].map(cat => (
             <button
               key={cat}
-              className={`cat-tab ${catFilter === cat ? 'active' : ''}`}
-              onClick={() => setCatFilter(cat)}
+              className={`cat-tab ${catFilter === (cat === t('billing.all_categories') ? 'All' : cat) ? 'active' : ''}`}
+              onClick={() => setCatFilter(cat === t('billing.all_categories') ? 'All' : cat)}
             >
               {cat}
             </button>
@@ -90,16 +91,15 @@ export default function Expenses() {
         </div>
       </div>
 
-      {/* Expenses Table */}
       <div className="table-container">
         <table className="data-table">
           <thead>
             <tr>
-              <th>Expense Name</th>
-              <th>Category</th>
-              <th>Amount</th>
-              <th>Date</th>
-              <th>Actions</th>
+              <th>{t('expenses.expense_name')}</th>
+              <th>{t('inventory.category')}</th>
+              <th>{t('expenses.amount')}</th>
+              <th>{t('common.date')}</th>
+              <th>{t('common.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -107,52 +107,51 @@ export default function Expenses() {
               <tr key={e.id}>
                 <td className="td-bold">{e.name}</td>
                 <td><span className="badge">{e.category}</span></td>
-                <td className="td-amount">₹{e.amount?.toLocaleString()}</td>
+                <td className="td-amount">\u20B9{e.amount?.toLocaleString()}</td>
                 <td>{new Date(e.date).toLocaleDateString()}</td>
                 <td>
                   <div className="action-btns">
-                    <button className="icon-btn edit" onClick={() => { setForm(e); setEditId(e.id); setModal(true); }}><LuPencil /></button>
-                    <button className="icon-btn delete" onClick={() => handleDelete(e.id)}><LuTrash2 /></button>
+                    <button className="icon-btn edit" title={t('common.edit')} onClick={() => { setForm(e); setEditId(e.id); setModal(true); }}><LuPencil /></button>
+                    <button className="icon-btn delete" title={t('common.delete')} onClick={() => handleDelete(e.id)}><LuTrash2 /></button>
                   </div>
                 </td>
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan="5" className="empty-row">No expenses found</td></tr>
+              <tr><td colSpan="5" className="empty-row">{t('expenses.no_expenses')}</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Modal */}
       {modal && (
         <div className="modal-overlay" onClick={() => setModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()}>
-            <h2 className="modal-title">{editId ? 'Edit Expense' : 'Add Expense'}</h2>
+            <h2 className="modal-title">{editId ? t('expenses.edit_expense') : t('expenses.add_expense')}</h2>
             <form onSubmit={handleSave} className="modal-form">
               <div className="form-group">
-                <label>Expense Name</label>
+                <label>{t('expenses.expense_name')}</label>
                 <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Amount (₹)</label>
+                  <label>{t('expenses.amount')} (\u20B9)</label>
                   <input type="number" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} required min="0" step="0.01" />
                 </div>
                 <div className="form-group">
-                  <label>Category</label>
+                  <label>{t('inventory.category')}</label>
                   <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
                     {EXPENSE_CATEGORIES.map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
               </div>
               <div className="form-group">
-                <label>Date</label>
+                <label>{t('common.date')}</label>
                 <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required />
               </div>
               <div className="modal-actions">
-                <button type="button" className="btn btn-ghost" onClick={() => setModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">{editId ? 'Update' : 'Add Expense'}</button>
+                <button type="button" className="btn btn-ghost" onClick={() => setModal(false)}>{t('common.cancel')}</button>
+                <button type="submit" className="btn btn-primary">{editId ? t('inventory.update') : t('expenses.add_expense')}</button>
               </div>
             </form>
           </div>

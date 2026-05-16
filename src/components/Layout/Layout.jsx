@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import {
@@ -9,31 +10,33 @@ import {
 } from 'react-icons/lu';
 import './Layout.css';
 
-const adminLinks = [
-  { to: '/dashboard', icon: <LuLayoutDashboard />, label: 'Dashboard' },
-  { to: '/billing', icon: <LuReceipt />, label: 'POS Billing' },
-  { to: '/inventory', icon: <LuPackage />, label: 'Inventory' },
-  { to: '/tokens', icon: <LuTicket />, label: 'Tokens' },
-  { to: '/expenses', icon: <LuWallet />, label: 'Expenses' },
-  { to: '/customers', icon: <LuUsers />, label: 'Customers' },
-  { to: '/settings', icon: <LuSettings />, label: 'Settings' },
-];
-
-const billingLinks = [
-  { to: '/billing', icon: <LuReceipt />, label: 'POS Billing' },
-  { to: '/inventory', icon: <LuPackage />, label: 'Inventory' },
-  { to: '/tokens', icon: <LuTicket />, label: 'Tokens' },
-  { to: '/expenses', icon: <LuWallet />, label: 'Expenses' },
-];
-
 export default function Layout({ children }) {
+  const { t } = useTranslation();
   const { user, logout, isAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
-  const links = isAdmin() ? adminLinks : billingLinks;
 
+  const adminLinks = [
+    { to: '/dashboard', icon: <LuLayoutDashboard />, label: t('common.dashboard') },
+    { to: '/billing', icon: <LuReceipt />, label: t('common.billing') },
+    { to: '/inventory', icon: <LuPackage />, label: t('common.inventory') },
+    { to: '/tokens', icon: <LuTicket />, label: t('common.tokens') },
+    { to: '/expenses', icon: <LuWallet />, label: t('common.expenses') },
+    { to: '/customers', icon: <LuUsers />, label: t('common.customers') },
+    { to: '/sales', icon: <LuReceipt />, label: t('common.sales_history') },
+    { to: '/settings', icon: <LuSettings />, label: t('common.settings') },
+  ];
+
+  const billingLinks = [
+    { to: '/billing', icon: <LuReceipt />, label: t('common.billing') },
+    { to: '/inventory', icon: <LuPackage />, label: t('common.inventory') },
+    { to: '/tokens', icon: <LuTicket />, label: t('common.tokens') },
+    { to: '/expenses', icon: <LuWallet />, label: t('common.expenses') },
+  ];
+
+  const links = isAdmin() ? adminLinks : billingLinks;
 
   return (
     <div className={`layout ${collapsed ? 'sidebar-collapsed' : ''}`}>

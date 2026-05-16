@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { db, TOKEN_CATEGORIES } from '../utils/db';
 import { v4 as uuid } from 'uuid';
 import { LuTicket, LuPlus, LuHash, LuPrinter, LuX } from 'react-icons/lu';
@@ -16,6 +17,7 @@ const TOKEN_TYPES = {
 };
 
 export default function Tokens() {
+  const { t } = useTranslation();
   const [tokens, setTokens] = useState([]);
   const [settings, setSettings] = useState({});
   const [products, setProducts] = useState([]);
@@ -54,7 +56,7 @@ export default function Tokens() {
 
   const handlePrint = (token) => {
     const printWindow = window.open('', '_blank', 'width=380,height=500');
-    const shopName = settings.shopName || 'Sri Silambu Karupatti Coffee';
+    const shopName = settings.shopName || t('settings.shop_name_val', { defaultValue: 'Sri Silambu Karupatti Coffee' });
     const address = settings.address || '';
     
     printWindow.document.write(`
@@ -88,14 +90,14 @@ export default function Tokens() {
           <div class="shop-name">${shopName}</div>
         </div>
         <div class="address">${address}</div>
-        <div style="font-size: 14px; font-weight: 800;">TOKEN RECEIPT</div>
+        <div style="font-size: 14px; font-weight: 800;">${t('tokens.token_receipt')}</div>
         <div class="token-num">#${token.tokenNumber}</div>
         <div class="details">${token.type || token.category}</div>
         <div class="qty">QTY: ${token.qty}</div>
         <div class="info">
           ${new Date(token.date).toLocaleDateString()} | ${new Date(token.date).toLocaleTimeString()}<br>
           <div class="dashed-line"></div>
-          <span style="font-size: 15px;">Amount: ₹${token.total.toFixed(2)}</span>
+          <span style="font-size: 15px;">Amount: \u20B9${token.total.toFixed(2)}</span>
         </div>
         <div style="height: 10px;"></div>
       </body>
@@ -114,7 +116,6 @@ export default function Tokens() {
     try {
       const typeLabel = selectedType || selectedCat;
       
-      // Find price
       const product = products.find(p => p.category === selectedCat && (p.name?.includes(typeLabel) || p.name === typeLabel));
       const price = product ? (product.sellingPrice || 0) : selectedCat === 'Tea' ? 15 : selectedCat === 'Coffee' ? 20 : selectedCat === 'Milk' ? 60 : 70;
       const totalPrice = price * qty;
@@ -133,7 +134,6 @@ export default function Tokens() {
 
       await db.add('tokens', newTask);
 
-      // Also add as a sale for dashboard
       await db.add('sales', {
         id: uuid(),
         date: new Date().toISOString(),
@@ -183,10 +183,8 @@ export default function Tokens() {
 
   return (
     <div className={`token-page ${isTokenFormOpen ? 'token-open' : ''}`}>
-      {/* Mobile Token Overlay */}
       {isTokenFormOpen && <div className="token-overlay mobile-only" onClick={() => setIsTokenFormOpen(false)} />}
 
-      {/* Floating Token Button (Mobile Only) */}
       <button 
         className={`mobile-token-fab mobile-only ${selectedCat ? 'has-selection' : ''}`}
         onClick={() => setIsTokenFormOpen(!isTokenFormOpen)}
@@ -200,22 +198,21 @@ export default function Tokens() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
             <img src="/silambu_logo.png" alt="Logo" style={{ width: '48px', height: '48px', objectFit: 'contain', background: 'white', padding: '4px', borderRadius: '10px', boxShadow: 'var(--shadow-sm)' }} />
             <div>
-              <h1 className="page-title">Token System</h1>
-              <p className="page-subtitle">Issue & track tokens for Tea, Coffee, Milk, Meals</p>
+              <h1 className="page-title">{t('tokens.title')}</h1>
+              <p className="page-subtitle">{t('tokens.subtitle')}</p>
             </div>
           </div>
         </div>
 
-        {/* Summary Cards */}
         <div className="kpi-grid">
           <div className="kpi-card" style={{ '--kpi-color': '#6366f1' }}>
             <div className="kpi-icon" style={{ background: '#6366f118', color: '#6366f1' }}>
               <LuTicket />
             </div>
             <div className="kpi-body">
-              <span className="kpi-label">Today's Total Items</span>
+              <span className="kpi-label">{t('tokens.total_items')}</span>
               <span className="kpi-value">{totalTokensQtyToday}</span>
-              <span className="kpi-sub">{todayTokens.length} tokens issued</span>
+              <span className="kpi-sub">{t('tokens.tokens_issued', { count: todayTokens.length })}</span>
             </div>
           </div>
           <div className="kpi-card" style={{ '--kpi-color': '#10b981' }}>
@@ -223,13 +220,12 @@ export default function Tokens() {
               <LuHash />
             </div>
             <div className="kpi-body">
-              <span className="kpi-label">Today's Token Revenue</span>
-              <span className="kpi-value">₹{totalRevenueToday.toLocaleString()}</span>
+              <span className="kpi-label">{t('tokens.revenue')}</span>
+              <span className="kpi-value">\u20B9{totalRevenueToday.toLocaleString()}</span>
             </div>
           </div>
         </div>
 
-        {/* Token Issue Cards */}
         <div className="token-grid">
           {TOKEN_CATEGORIES.map(cat => (
             <div
@@ -244,27 +240,26 @@ export default function Tokens() {
               <span className="token-emoji">{TOKEN_EMOJIS[cat]}</span>
               <span className="token-cat-name">{cat}</span>
               <div className="token-stats">
-                <span>{categorySummary[cat]?.count || 0} items</span>
-                <span>₹{categorySummary[cat]?.revenue?.toLocaleString() || 0}</span>
+                <span>{t('tokens.items_stat', { count: categorySummary[cat]?.count || 0 })}</span>
+                <span>\u20B9{categorySummary[cat]?.revenue?.toLocaleString() || 0}</span>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Today's Token Log */}
         <div className="section-card">
-          <h3 className="section-title">Today's Token Log</h3>
+          <h3 className="section-title">{t('tokens.log_title')}</h3>
           {todayTokens.length > 0 ? (
             <div className="table-container">
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Token #</th>
-                    <th>Item / Type</th>
-                    <th>Qty</th>
-                    <th>Total</th>
-                    <th>Time</th>
-                    <th>Print</th>
+                    <th>{t('tokens.token_number')}</th>
+                    <th>{t('tokens.item_type')}</th>
+                    <th>{t('billing.weight_in', { unit: '' }).replace('()', '').trim() || 'Qty'}</th>
+                    <th>{t('common.total')}</th>
+                    <th>{t('common.date')}</th>
+                    <th>{t('common.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -273,10 +268,10 @@ export default function Tokens() {
                       <td><span className="badge accent">#{t.tokenNumber}</span></td>
                       <td><span className="td-bold">{t.type}</span> <small>({t.category})</small></td>
                       <td>{t.qty}</td>
-                      <td>₹{t.total}</td>
+                      <td>\u20B9{t.total}</td>
                       <td>{new Date(t.date).toLocaleTimeString()}</td>
                       <td>
-                        <button className="icon-btn" onClick={() => handlePrint(t)}>
+                        <button className="icon-btn" title={t('billing.print_receipt')} onClick={() => handlePrint(t)}>
                           <LuPrinter />
                         </button>
                       </td>
@@ -286,12 +281,11 @@ export default function Tokens() {
               </table>
             </div>
           ) : (
-            <div className="empty-state">No tokens issued today</div>
+            <div className="empty-state">{t('tokens.no_tokens')}</div>
           )}
         </div>
       </div>
 
-      {/* Token Issue Panel (Like Cart) */}
       <div className={`token-panel ${isTokenFormOpen ? 'mobile-show' : ''}`}>
         <div className="token-panel-header">
           <button className="btn-close-token mobile-only" onClick={() => setIsTokenFormOpen(false)}>
@@ -299,7 +293,7 @@ export default function Tokens() {
           </button>
           <div className="token-panel-title">
             <LuTicket />
-            <h2>Token</h2>
+            <h2>{t('common.tokens')}</h2>
           </div>
         </div>
 
@@ -307,8 +301,8 @@ export default function Tokens() {
           {!selectedCat ? (
             <div className="token-empty">
               <LuTicket />
-              <p>No token selected</p>
-              <p className="token-empty-sub">Tap categories to issue</p>
+              <p>{t('tokens.no_selection')}</p>
+              <p className="token-empty-sub">{t('tokens.tap_to_issue')}</p>
             </div>
           ) : (
             <div className="token-issue-form animate-slide-up">
@@ -318,7 +312,7 @@ export default function Tokens() {
               </div>
               
               <div className="token-type-selector">
-                <label>Select Type:</label>
+                <label>{t('tokens.select_type')}</label>
                 <div className="type-chips">
                   {TOKEN_TYPES[selectedCat].map(type => (
                     <button 
@@ -334,7 +328,7 @@ export default function Tokens() {
 
               <div className="token-panel-footer">
                 <div className="qty-selector">
-                  <label>Quantity:</label>
+                  <label>{t('tokens.quantity')}</label>
                   <div className="qty-control">
                     <button className="qty-btn" onClick={() => setQty(Math.max(1, qty - 1))}>−</button>
                     <span className="qty-display">{qty}</span>
@@ -343,7 +337,7 @@ export default function Tokens() {
                 </div>
                 
                 <button className="btn btn-primary btn-large checkout-btn" onClick={issueToken}>
-                  <LuPlus /> Issue & Print
+                  <LuPlus /> {t('tokens.issue_print')}
                 </button>
               </div>
             </div>
