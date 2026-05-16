@@ -215,12 +215,12 @@ export default function Billing() {
         <div class="line"></div>
         <div class="grid bold"><span>Item</span><span class="text-center">Qty</span><span class="text-right">Amt</span></div>
         <div class="line"></div>
-        ${showReceipt.items.map(i => `<div class="grid"><span>${i.name}</span><span class="text-center">${i.qty}</span><span class="text-right">\u20B9${((i.sellingPrice || 0) * i.qty).toFixed(2)}</span></div>`).join('')}
+        ${showReceipt.items.map(i => `<div class="grid"><span>${i.name}</span><span class="text-center">${i.qty}</span><span class="text-right">₹${((i.sellingPrice || 0) * i.qty).toFixed(2)}</span></div>`).join('')}
         <div class="dashed-line"></div>
-        <div class="row"><span>${t('billing.subtotal')}</span><span>\u20B9${showReceipt.subtotal.toFixed(2)}</span></div>
-        ${showReceipt.discountAmt > 0 ? `<div class="row"><span>${t('billing.discount')} (${showReceipt.discount}%)</span><span>-\u20B9${showReceipt.discountAmt.toFixed(2)}</span></div>` : ''}
+        <div class="row"><span>${t('billing.subtotal')}</span><span>₹${showReceipt.subtotal.toFixed(2)}</span></div>
+        ${showReceipt.discountAmt > 0 ? `<div class="row"><span>${t('billing.discount')} (${showReceipt.discount}%)</span><span>-₹${showReceipt.discountAmt.toFixed(2)}</span></div>` : ''}
         <div class="line"></div>
-        <div class="row bold total-section"><span>${t('billing.total')}</span><span>\u20B9${showReceipt.total.toFixed(2)}</span></div>
+        <div class="row bold total-section"><span>${t('billing.total')}</span><span>₹${showReceipt.total.toFixed(2)}</span></div>
         <div class="line"></div>
         <div class="center footer">
           <p class="bold">Payment Mode: ${showReceipt.paymentMode}</p>
@@ -248,7 +248,7 @@ export default function Billing() {
               <img src="/silambu_logo.png" alt="Logo" style={{ width: '60px', height: '60px', objectFit: 'contain', marginBottom: '10px' }} />
               <div className="receipt-icon">✅</div>
               <h2>{t('billing.payment_successful')}</h2>
-              <p className="receipt-total">\u20B9{showReceipt.total.toFixed(2)}</p>
+              <p className="receipt-total">₹{showReceipt.total.toFixed(2)}</p>
             </div>
             <div className="receipt-details">
               <div className="receipt-row">
@@ -271,23 +271,23 @@ export default function Billing() {
               {showReceipt.items.map((item, i) => (
                 <div key={i} className="receipt-row">
                   <span>{item.name} × {item.qty}</span>
-                  <span>\u20B9{(item.sellingPrice * item.qty).toFixed(2)}</span>
+                  <span>₹{(item.sellingPrice * item.qty).toFixed(2)}</span>
                 </div>
               ))}
               <div className="receipt-divider" />
               <div className="receipt-row">
                 <span>{t('billing.subtotal')}</span>
-                <span>\u20B9{showReceipt.subtotal.toFixed(2)}</span>
+                <span>₹{showReceipt.subtotal.toFixed(2)}</span>
               </div>
               {showReceipt.discountAmt > 0 && (
                 <div className="receipt-row discount">
                   <span>{t('billing.discount')} ({showReceipt.discount}%)</span>
-                  <span>-\u20B9{showReceipt.discountAmt.toFixed(2)}</span>
+                  <span>-₹{showReceipt.discountAmt.toFixed(2)}</span>
                 </div>
               )}
               <div className="receipt-row total">
                 <span>{t('billing.total')}</span>
-                <span>\u20B9{showReceipt.total.toFixed(2)}</span>
+                <span>₹{showReceipt.total.toFixed(2)}</span>
               </div>
             </div>
             <div className="receipt-actions">
@@ -377,7 +377,7 @@ export default function Billing() {
               <button key={p.id} className="product-card" onClick={() => addToCart(p)} disabled={p.stock <= 0}>
                 <div className="product-emoji">{getIcon(p)}</div>
                 <span className="product-name">{p.name}</span>
-                <span className="product-price">\u20B9{p.sellingPrice}</span>
+                <span className="product-price">{p.sellingPrice}</span>
                 {p.stock <= 10 && <span className="product-stock-low">{p.stock} {t('billing.left')}</span>}
               </button>
             );
@@ -420,7 +420,7 @@ export default function Billing() {
               <div key={c.id} className="cart-item">
                 <div className="cart-item-info">
                   <span className="cart-item-name">{c.name}</span>
-                  <span className="cart-item-price">\u20B9{c.sellingPrice} {t('billing.per')} {c.unit}</span>
+                  <span className="cart-item-price">₹{c.sellingPrice} {t('billing.per')} {c.unit}</span>
                 </div>
                 <div className="cart-item-controls">
                   <button className="qty-btn" onClick={() => updateQty(c.id, c.unit === 'kg' ? -0.1 : -1)}><LuMinus /></button>
@@ -442,7 +442,7 @@ export default function Billing() {
                   <button className="qty-btn" onClick={() => updateQty(c.id, c.unit === 'kg' ? 0.1 : 1)}><LuPlus /></button>
                   <button className="qty-btn delete" onClick={() => removeItem(c.id)}><LuTrash2 /></button>
                 </div>
-                <span className="cart-item-total">\u20B9{(c.sellingPrice * c.qty).toFixed(2)}</span>
+                <span className="cart-item-total">₹{(c.sellingPrice * c.qty).toFixed(2)}</span>
               </div>
             ))
           )}
@@ -485,22 +485,22 @@ export default function Billing() {
             <div className="cart-totals">
               <div className="total-row">
                 <span>{t('billing.subtotal')}</span>
-                <span>\u20B9{subtotal.toFixed(2)}</span>
+                <span>₹{subtotal.toFixed(2)}</span>
               </div>
               {discountAmt > 0 && (
                 <div className="total-row discount">
                   <span>{t('billing.discount')} ({discount}%)</span>
-                  <span>-\u20B9{discountAmt.toFixed(2)}</span>
+                  <span>-₹{discountAmt.toFixed(2)}</span>
                 </div>
               )}
               <div className="total-row grand">
                 <span>{t('billing.total')}</span>
-                <span>\u20B9{total.toFixed(2)}</span>
+                <span>₹{total.toFixed(2)}</span>
               </div>
             </div>
 
             <button className="checkout-btn" onClick={() => { handleCheckout(); setIsCartOpen(false); }}>
-              <LuCheck /> {t('billing.checkout')} — \u20B9{total.toFixed(2)}
+              <LuCheck /> {t('billing.checkout')} — ₹{total.toFixed(2)}
             </button>
           </div>
         )}
@@ -510,7 +510,7 @@ export default function Billing() {
         <div className="modal-overlay">
           <div className="modal modal-sm animate-slide-up">
             <h3 className="modal-title">{t('billing.enter_weight')}</h3>
-            <p className="modal-subtitle">{weightModal.product.name} (\u20B9{weightModal.product.sellingPrice}/kg)</p>
+            <p className="modal-subtitle">{weightModal.product.name} (₹{weightModal.product.sellingPrice}/kg)</p>
             
             <div className="modal-form">
               <div className="form-group">

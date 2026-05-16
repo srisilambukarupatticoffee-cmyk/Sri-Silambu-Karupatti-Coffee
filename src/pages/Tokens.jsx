@@ -97,7 +97,7 @@ export default function Tokens() {
         <div class="info">
           ${new Date(token.date).toLocaleDateString()} | ${new Date(token.date).toLocaleTimeString()}<br>
           <div class="dashed-line"></div>
-          <span style="font-size: 15px;">Amount: \u20B9${token.total.toFixed(2)}</span>
+          <span style="font-size: 15px;">Amount: ₹${token.total.toFixed(2)}</span>
         </div>
         <div style="height: 10px;"></div>
       </body>
@@ -221,7 +221,7 @@ export default function Tokens() {
             </div>
             <div className="kpi-body">
               <span className="kpi-label">{t('tokens.revenue')}</span>
-              <span className="kpi-value">\u20B9{totalRevenueToday.toLocaleString()}</span>
+              <span className="kpi-value">₹{totalRevenueToday.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -241,7 +241,7 @@ export default function Tokens() {
               <span className="token-cat-name">{cat}</span>
               <div className="token-stats">
                 <span>{t('tokens.items_stat', { count: categorySummary[cat]?.count || 0 })}</span>
-                <span>\u20B9{categorySummary[cat]?.revenue?.toLocaleString() || 0}</span>
+                <span>₹{categorySummary[cat]?.revenue?.toLocaleString() || 0}</span>
               </div>
             </div>
           ))}
@@ -268,7 +268,7 @@ export default function Tokens() {
                       <td><span className="badge accent">#{t.tokenNumber}</span></td>
                       <td><span className="td-bold">{t.type}</span> <small>({t.category})</small></td>
                       <td>{t.qty}</td>
-                      <td>\u20B9{t.total}</td>
+                      <td>₹{t.total}</td>
                       <td>{new Date(t.date).toLocaleTimeString()}</td>
                       <td>
                         <button className="icon-btn" title={t('billing.print_receipt')} onClick={() => handlePrint(t)}>

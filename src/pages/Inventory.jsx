@@ -132,8 +132,8 @@ export default function Inventory() {
               <th>{t('inventory.product_name')}</th>
               <th>{t('inventory.category')}</th>
               <th>{t('inventory.unit')}</th>
-              <th>{t('inventory.cost_price')} \u20B9</th>
-              <th>{t('inventory.selling_price')} \u20B9</th>
+              <th>{t('inventory.cost_price')} ₹</th>
+              <th>{t('inventory.selling_price')} ₹</th>
               <th>{t('dashboard.tokens')}</th>
               <th>{t('common.actions')}</th>
             </tr>
@@ -144,8 +144,8 @@ export default function Inventory() {
                 <td className="td-bold">{p.name}</td>
                 <td><span className="badge">{p.category}</span></td>
                 <td>{p.unit}</td>
-                <td>\u20B9{p.costPrice}</td>
-                <td>\u20B9{p.sellingPrice}</td>
+                <td>₹{p.costPrice}</td>
+                <td>₹{p.sellingPrice}</td>
                 <td>
                   <span className={`stock-badge ${p.stock <= 10 ? 'low' : p.stock <= 30 ? 'medium' : 'high'}`}>
                     {p.stock}
@@ -217,11 +217,11 @@ export default function Inventory() {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>{t('inventory.cost_price')} (\u20B9)</label>
+                  <label>{t('inventory.cost_price')} (₹)</label>
                   <input type="number" value={form.costPrice} onChange={e => setForm({ ...form, costPrice: e.target.value })} required min="0" step="0.01" />
                 </div>
                 <div className="form-group">
-                  <label>{t('inventory.selling_price')} (\u20B9)</label>
+                  <label>{t('inventory.selling_price')} (₹)</label>
                   <input type="number" value={form.sellingPrice} onChange={e => setForm({ ...form, sellingPrice: e.target.value })} required min="0" step="0.01" />
                 </div>
               </div>

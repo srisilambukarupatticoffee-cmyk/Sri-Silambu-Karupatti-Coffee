@@ -205,20 +205,20 @@ export default function Dashboard() {
           <div class="grid">
             <span>${name}</span>
             <span class="text-center">${d.qty.toFixed(d.qty % 1 === 0 ? 0 : 2)}</span>
-            <span class="text-right">\u20B9${d.total.toFixed(2)}</span>
+            <span class="text-right">₹${d.total.toFixed(2)}</span>
           </div>
         `).join('')}
         <div class="dashed-line"></div>
-        <div class="row bold"><span>SALES REVENUE</span><span>\u20B9${data.todayRevenue.toFixed(2)}</span></div>
-        <div class="row bold"><span>TOKEN REVENUE</span><span>\u20B9${data.todayTokenRevenue.toFixed(2)}</span></div>
+        <div class="row bold"><span>SALES REVENUE</span><span>₹${data.todayRevenue.toFixed(2)}</span></div>
+        <div class="row bold"><span>TOKEN REVENUE</span><span>₹${data.todayTokenRevenue.toFixed(2)}</span></div>
         <div class="line"></div>
         <div class="row bold" style="font-size: 16px; margin-top: 5px;">
-          <span>GRAND TOTAL</span><span>\u20B9${(data.todayRevenue + data.todayTokenRevenue).toFixed(2)}</span>
+          <span>GRAND TOTAL</span><span>₹${(data.todayRevenue + data.todayTokenRevenue).toFixed(2)}</span>
         </div>
         <div class="line"></div>
-        <div class="row"><span>Total Expenses</span><span>-\u20B9${data.todayExpenseTotal.toFixed(2)}</span></div>
+        <div class="row"><span>Total Expenses</span><span>-₹${data.todayExpenseTotal.toFixed(2)}</span></div>
         <div class="row bold" style="font-size: 15px; margin-top: 5px;">
-          <span>NET CASH</span><span>\u20B9${(data.todayRevenue + data.todayTokenRevenue - data.todayExpenseTotal).toFixed(2)}</span>
+          <span>NET CASH</span><span>₹${(data.todayRevenue + data.todayTokenRevenue - data.todayExpenseTotal).toFixed(2)}</span>
         </div>
         <div class="line"></div>
         <div class="center" style="margin-top: 20px;"><p class="bold">-- End of Summary --</p></div>
@@ -321,7 +321,7 @@ export default function Dashboard() {
               <tr>
                 <td>${name}</td>
                 <td class="text-center">${d.qty.toFixed(d.qty % 1 === 0 ? 0 : 2)}</td>
-                <td class="text-right">\u20B9${d.total.toFixed(2)}</td>
+                <td class="text-right">₹${d.total.toFixed(2)}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -345,7 +345,7 @@ export default function Dashboard() {
                 <td>${s.id.slice(0,8).toUpperCase()}</td>
                 <td>${s.customerName}</td>
                 <td>${s.paymentMode}</td>
-                <td class="text-right">\u20B9${(s.total || 0).toFixed(2)}</td>
+                <td class="text-right">₹${(s.total || 0).toFixed(2)}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -353,10 +353,10 @@ export default function Dashboard() {
 
         <div class="summary-box">
           <table class="summary-table">
-            <tr><td>Total Sales Revenue</td><td class="text-right">\u20B9${mRevenue.toFixed(2)}</td></tr>
-            <tr><td>Total Token Revenue</td><td class="text-right">\u20B9${mTokenRevenue.toFixed(2)}</td></tr>
-            <tr><td>Total Expenses</td><td class="text-right">-\u20B9${mExpenseTotal.toFixed(2)}</td></tr>
-            <tr class="total-row"><td>NET CASH</td><td class="text-right">\u20B9${(mRevenue + mTokenRevenue - mExpenseTotal).toFixed(2)}</td></tr>
+            <tr><td>Total Sales Revenue</td><td class="text-right">₹${mRevenue.toFixed(2)}</td></tr>
+            <tr><td>Total Token Revenue</td><td class="text-right">₹${mTokenRevenue.toFixed(2)}</td></tr>
+            <tr><td>Total Expenses</td><td class="text-right">-₹${mExpenseTotal.toFixed(2)}</td></tr>
+            <tr class="total-row"><td>NET CASH</td><td class="text-right">₹${(mRevenue + mTokenRevenue - mExpenseTotal).toFixed(2)}</td></tr>
           </table>
         </div>
 
@@ -386,26 +386,26 @@ export default function Dashboard() {
   const kpis = [
     {
       label: t('dashboard.today_sales'),
-      value: `\u20B9${(period === 'all' ? sumTotal(sales) : (period === 'today' ? data.todayRevenue : data.monthRevenue)).toLocaleString()}`,
+      value: `₹${(period === 'all' ? sumTotal(sales) : (period === 'today' ? data.todayRevenue : data.monthRevenue)).toLocaleString()}`,
       sub: `${period === 'all' ? sales.length : (period === 'today' ? data.todaySalesCount : data.monthSalesCount)} ${t('dashboard.orders')}`,
       icon: <LuShoppingCart />,
       color: '#6366f1',
     },
     {
       label: t('common.expenses'),
-      value: `\u20B9${(period === 'all' ? sumAmount(expenses) : (period === 'today' ? data.todayExpenseTotal : data.monthExpenseTotal)).toLocaleString()}`,
+      value: `₹${(period === 'all' ? sumAmount(expenses) : (period === 'today' ? data.todayExpenseTotal : data.monthExpenseTotal)).toLocaleString()}`,
       icon: <LuWallet />,
       color: '#ef4444',
     },
     {
       label: t('dashboard.net_profit'),
-      value: `\u20B9${(period === 'all' ? (sumTotal(sales) - sumAmount(expenses) - sumCost(sales)) : (period === 'today' ? data.todayProfit : data.monthProfit)).toLocaleString()}`,
+      value: `₹${(period === 'all' ? (sumTotal(sales) - sumAmount(expenses) - sumCost(sales)) : (period === 'today' ? data.todayProfit : data.monthProfit)).toLocaleString()}`,
       icon: (period === 'today' ? data.todayProfit : data.monthProfit) >= 0 ? <LuTrendingUp /> : <LuTrendingDown />,
       color: (period === 'today' ? data.todayProfit : data.monthProfit) >= 0 ? '#10b981' : '#ef4444',
     },
     {
       label: t('dashboard.token_revenue'),
-      value: `\u20B9${(period === 'all' ? sumTotal(tokens) : (period === 'today' ? data.todayTokenRevenue : data.monthTokenRevenue)).toLocaleString()}`,
+      value: `₹${(period === 'all' ? sumTotal(tokens) : (period === 'today' ? data.todayTokenRevenue : data.monthTokenRevenue)).toLocaleString()}`,
       sub: `${period === 'all' ? tokens.reduce((s,tk) => s+(tk.qty||1), 0) : (period === 'today' ? data.todayTokenCount : data.monthTokenCount)} ${t('dashboard.tokens')}`,
       icon: <LuTicket />,
       color: '#f59e0b',
@@ -526,7 +526,7 @@ export default function Dashboard() {
                     borderRadius: '10px',
                     color: 'var(--text-primary)'
                   }}
-                  formatter={(value) => `\u20B9${value.toLocaleString()}`}
+                  formatter={(value) => `₹${value.toLocaleString()}`}
                 />
                 <Legend />
               </PieChart>
@@ -571,7 +571,7 @@ export default function Dashboard() {
                   <div className="token-summary-icon">🎟️</div>
                   <div className="token-summary-name">{tk.name}</div>
                   <div className="token-summary-count">{tk.count} {t('dashboard.tokens')}</div>
-                  <div className="token-summary-rev">\u20B9{tk.revenue.toLocaleString()}</div>
+                  <div className="token-summary-rev">₹{tk.revenue.toLocaleString()}</div>
                 </div>
               ))}
             </div>

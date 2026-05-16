@@ -78,7 +78,7 @@
     "search_placeholder": "Search products...",
     "all_categories": "All",
     "today_stats": "Today: {{count}} sales",
-    "revenue_stats": "Revenue: \u20B9{{total}}",
+    "revenue_stats": "Revenue: ₹{{total}}",
     "cart": "Cart",
     "clear": "Clear",
     "cart_empty": "Cart is empty",
@@ -119,7 +119,7 @@
   },
   "expenses": {
     "title": "Expenses",
-    "stats": "Today: \u20B9{{today}} • This Month: \u20B9{{month}}",
+    "stats": "Today: ₹{{today}} • This Month: ₹{{month}}",
     "add_expense": "Add Expense",
     "edit_expense": "Edit Expense",
     "expense_name": "Expense Name",

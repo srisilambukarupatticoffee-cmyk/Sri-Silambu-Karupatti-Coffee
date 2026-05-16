@@ -225,12 +225,12 @@ export default function Settings() {
               </div>
               <div className="receipt-sep">- - - - - - - - - - - - - - - -</div>
               <div style={{ textAlign: 'left' }}>
-                <div className="receipt-line"><span>Masala Tea ×2</span><span>\u20B930.00</span></div>
-                <div className="receipt-line"><span>Filter Coffee ×1</span><span>\u20B920.00</span></div>
+                <div className="receipt-line"><span>Masala Tea ×2</span><span>₹30.00</span></div>
+                <div className="receipt-line"><span>Filter Coffee ×1</span><span>₹20.00</span></div>
               </div>
               <div className="receipt-sep">- - - - - - - - - - - - - - - -</div>
               <div style={{ textAlign: 'left' }}>
-                <div className="receipt-line"><strong>{t('common.total')}</strong><strong>\u20B950.00</strong></div>
+                <div className="receipt-line"><strong>{t('common.total')}</strong><strong>₹50.00</strong></div>
               </div>
               <div className="receipt-sep">- - - - - - - - - - - - - - - -</div>
               <p>Payment: Cash</p>

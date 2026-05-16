@@ -107,7 +107,7 @@ export default function Expenses() {
               <tr key={e.id}>
                 <td className="td-bold">{e.name}</td>
                 <td><span className="badge">{e.category}</span></td>
-                <td className="td-amount">\u20B9{e.amount?.toLocaleString()}</td>
+                <td className="td-amount">₹{e.amount?.toLocaleString()}</td>
                 <td>{new Date(e.date).toLocaleDateString()}</td>
                 <td>
                   <div className="action-btns">
@@ -135,7 +135,7 @@ export default function Expenses() {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>{t('expenses.amount')} (\u20B9)</label>
+                  <label>{t('expenses.amount')} (₹)</label>
                   <input type="number" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} required min="0" step="0.01" />
                 </div>
                 <div className="form-group">

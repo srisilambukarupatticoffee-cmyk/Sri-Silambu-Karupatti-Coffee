@@ -78,7 +78,7 @@
     "search_placeholder": "தேடல்...",
     "all_categories": "அனைத்தும்",
     "today_stats": "இன்று: {{count}} விற்பனை",
-    "revenue_stats": "வருவாய்: \u20B9{{total}}",
+    "revenue_stats": "வருவாய்: ₹{{total}}",
     "cart": "கூடை",
     "clear": "அழி",
     "cart_empty": "கூடை காலியாக உள்ளது",
@@ -119,7 +119,7 @@
   },
   "expenses": {
     "title": "செலவுகள்",
-    "stats": "இன்று: \u20B9{{today}} • இந்த மாதம்: \u20B9{{month}}",
+    "stats": "இன்று: ₹{{today}} • இந்த மாதம்: ₹{{month}}",
     "add_expense": "செலவு சேர்க்க",
     "edit_expense": "திருத்து",
     "expense_name": "செலவு பெயர்",

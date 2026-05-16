@@ -86,12 +86,12 @@ export default function Sales() {
         <div class="line"></div>
         <div class="grid bold"><span>${t('customers.items')}</span><span class="text-center">Qty</span><span class="text-right">Amt</span></div>
         <div class="line"></div>
-        ${sale.items?.map(i => `<div class="grid"><span>${i.name}</span><span class="text-center">${i.qty}</span><span class="text-right">\u20B9${((i.sellingPrice || 0) * i.qty).toFixed(2)}</span></div>`).join('')}
+        ${sale.items?.map(i => `<div class="grid"><span>${i.name}</span><span class="text-center">${i.qty}</span><span class="text-right">₹${((i.sellingPrice || 0) * i.qty).toFixed(2)}</span></div>`).join('')}
         <div class="dashed-line"></div>
-        <div class="row"><span>${t('billing.subtotal')}</span><span>\u20B9${(sale.subtotal || 0).toFixed(2)}</span></div>
-        ${sale.discountAmt > 0 ? `<div class="row"><span>${t('billing.discount')} (${sale.discount}%)</span><span>-\u20B9${sale.discountAmt.toFixed(2)}</span></div>` : ''}
+        <div class="row"><span>${t('billing.subtotal')}</span><span>₹${(sale.subtotal || 0).toFixed(2)}</span></div>
+        ${sale.discountAmt > 0 ? `<div class="row"><span>${t('billing.discount')} (${sale.discount}%)</span><span>-₹${sale.discountAmt.toFixed(2)}</span></div>` : ''}
         <div class="line"></div>
-        <div class="row bold" style="font-size: 16px;"><span>${t('sales.grand_total')}</span><span>\u20B9${(sale.total || 0).toFixed(2)}</span></div>
+        <div class="row bold" style="font-size: 16px;"><span>${t('sales.grand_total')}</span><span>₹${(sale.total || 0).toFixed(2)}</span></div>
         <div class="line"></div>
         <div class="center" style="margin-top: 10px;">
           <p class="bold">${t('sales.payment')}: ${sale.paymentMode}</p>
@@ -168,7 +168,7 @@ export default function Sales() {
                 <td><code style={{ fontSize: '11px' }}>{s.id.slice(0, 8).toUpperCase()}</code></td>
                 <td>{s.customerName}</td>
                 <td>{s.items?.length || 0} {t('dashboard.orders')}</td>
-                <td><strong>\u20B9{(s.total || 0).toLocaleString()}</strong></td>
+                <td><strong>₹{(s.total || 0).toLocaleString()}</strong></td>
                 <td><span className={`badge badge-${s.paymentMode?.toLowerCase()}`}>{s.paymentMode}</span></td>
                 <td>
                   <div className="table-actions">
@@ -209,14 +209,14 @@ export default function Sales() {
                   {selectedSale.items?.map((item, i) => (
                     <div key={i} className="detail-item-row">
                       <span>{item.name} × {item.qty}</span>
-                      <span>\u20B9{(item.sellingPrice * item.qty).toFixed(2)}</span>
+                      <span>₹{(item.sellingPrice * item.qty).toFixed(2)}</span>
                     </div>
                   ))}
                </div>
                <div className="details-summary">
-                  <div className="row"><span>{t('billing.subtotal')}</span><span>\u20B9{selectedSale.subtotal?.toFixed(2)}</span></div>
-                  {selectedSale.discountAmt > 0 && <div className="row"><span>{t('billing.discount')}</span><span>-\u20B9{selectedSale.discountAmt?.toFixed(2)}</span></div>}
-                  <div className="row total"><span>{t('sales.grand_total')}</span><span>\u20B9{selectedSale.total?.toFixed(2)}</span></div>
+                  <div className="row"><span>{t('billing.subtotal')}</span><span>₹{selectedSale.subtotal?.toFixed(2)}</span></div>
+                  {selectedSale.discountAmt > 0 && <div className="row"><span>{t('billing.discount')}</span><span>-₹{selectedSale.discountAmt?.toFixed(2)}</span></div>}
+                  <div className="row total"><span>{t('sales.grand_total')}</span><span>₹{selectedSale.total?.toFixed(2)}</span></div>
                </div>
             </div>
             <div className="modal-actions">

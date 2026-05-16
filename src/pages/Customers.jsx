@@ -71,7 +71,7 @@ export default function Customers() {
               <tr key={c.id}>
                 <td className="td-bold">{c.name}</td>
                 <td>{(c.purchases || []).length}</td>
-                <td>\u20B9{(c.totalSpent || 0).toLocaleString()}</td>
+                <td>₹{(c.totalSpent || 0).toLocaleString()}</td>
                 <td>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—'}</td>
                 <td>
                   <button className="icon-btn edit" title={t('common.actions')} onClick={() => setSelected(selected === c.id ? null : c.id)}>
@@ -109,7 +109,7 @@ export default function Customers() {
                       <tr key={s.id}>
                         <td>{new Date(s.date).toLocaleDateString()}</td>
                         <td>{(s.items || []).map(i => `${i.name}×${i.qty}`).join(', ')}</td>
-                        <td>\u20B9{s.total?.toLocaleString()}</td>
+                        <td>₹{s.total?.toLocaleString()}</td>
                         <td><span className="badge">{s.paymentMode}</span></td>
                       </tr>
                     ))}
