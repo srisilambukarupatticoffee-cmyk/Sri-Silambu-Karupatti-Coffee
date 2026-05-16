@@ -377,7 +377,7 @@ export default function Billing() {
               <button key={p.id} className="product-card" onClick={() => addToCart(p)} disabled={p.stock <= 0}>
                 <div className="product-emoji">{getIcon(p)}</div>
                 <span className="product-name">{p.name}</span>
-                <span className="product-price">{p.sellingPrice}</span>
+                <span className="product-price">₹{p.sellingPrice}</span>
                 {p.stock <= 10 && <span className="product-stock-low">{p.stock} {t('billing.left')}</span>}
               </button>
             );
